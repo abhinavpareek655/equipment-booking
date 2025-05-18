@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -5,59 +7,60 @@ import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect, useState } from "react"
 
-const equipment = [
-  {
-    id: 1,
-    name: "Flow Cytometer",
-    category: "Cell Analysis",
-    location: "Lab 101",
-    availability: "Available",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 2,
-    name: "Confocal Microscope",
-    category: "Microscopy",
-    location: "Lab 102",
-    availability: "Maintenance",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 3,
-    name: "PCR Thermal Cycler",
-    category: "Molecular Biology",
-    location: "Lab 103",
-    availability: "Available",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 4,
-    name: "Ultra-centrifuge",
-    category: "Separation",
-    location: "Lab 104",
-    availability: "Available",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 5,
-    name: "Mass Spectrometer",
-    category: "Analysis",
-    location: "Lab 105",
-    availability: "Reserved",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 6,
-    name: "HPLC System",
-    category: "Chromatography",
-    location: "Lab 106",
-    availability: "Available",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-]
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+
+type EquipmentItem = {
+  id: string
+  name: string
+  category: string
+  location: string
+  availability: string
+  image: string
+}
 
 export default function EquipmentPage() {
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+
+  useEffect(() => {
+  console.log("📦 Fetching /api/equipment...")
+
+  fetch("/api/equipment")
+    .then(async (res) => {
+      console.log("🔁 Response status:", res.status)
+
+      const text = await res.text()
+      console.log("📄 Raw response:", text)
+
+      if (!res.ok) {
+        throw new Error(`❌ Failed to fetch /api/equipment: ${res.status}`)
+      }
+
+      // Parse JSON only if response was OK
+      return JSON.parse(text)
+    })
+    .then((data) => {
+      console.log("✅ Parsed data:", data)
+
+      const mapped = data.map((eq: any) => ({
+        id: eq._id,
+        name: eq.name,
+        category: eq.category,
+        location: eq.location,
+        availability: eq.status,
+        image: eq.imageUrl || "/placeholder.svg?height=200&width=200",
+      }))
+
+      setEquipment(mapped)
+    })
+    .catch((err) => {
+      console.error("🚨 Fetch error:", err)
+    })
+}, [])
+
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">Equipment Catalog</h1>
