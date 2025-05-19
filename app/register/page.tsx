@@ -44,7 +44,7 @@ export default function RegisterPage() {
       <Card className="mx-auto max-w-lg w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Register to access the DBT BUILDER equipment booking system</CardDescription>
+          <CardDescription>Register to access the CURAJ EBS equipment booking system</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

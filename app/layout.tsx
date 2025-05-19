@@ -8,7 +8,7 @@ import { UserNav } from "@/components/user-nav"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "DBT BUILDER Equipment Booking System",
+  title: "Equipment Booking System",
   description: "Equipment booking system for the School of Life Sciences, Central University of Rajasthan",
     generator: 'v0.dev'
 }

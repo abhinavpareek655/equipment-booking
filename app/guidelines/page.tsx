@@ -28,7 +28,7 @@ export default function GuidelinesPage() {
               <div>
                 <h3 className="text-lg font-medium mb-2">Purpose</h3>
                 <p>
-                  To ensure systematic, fair, and efficient use of research equipment procured under the DBT BUILDER
+                  To ensure systematic, fair, and efficient use of research equipment procured under the CURAJ EBS
                   project, this SOP provides a structured process for booking, usage, and maintenance, specifically for
                   research scholars.
                 </p>
@@ -38,7 +38,7 @@ export default function GuidelinesPage() {
                 <h3 className="text-lg font-medium mb-2">Scope</h3>
                 <p>
                   This SOP applies to all research scholars, faculty, and technical staff utilizing equipment funded by
-                  the DBT BUILDER project in the School of Life Sciences, Central University of Rajasthan.
+                  the CURAJ EBS project in the School of Life Sciences, Central University of Rajasthan.
                 </p>
               </div>
 
@@ -48,7 +48,7 @@ export default function GuidelinesPage() {
                 <AlertDescription>
                   In alignment with the project objectives, 40% of the facility's functional hours will be reserved for
                   the Principal Investigator (PI) to conduct the experiments specified in the project proposal. As a
-                  result, the facility will be accessible to users other than the DBT-BUILDER PI and project staff only
+                  result, the facility will be accessible to users other than the CURAJ-EBS PI and project staff only
                   three days per week.
                 </AlertDescription>
               </Alert>

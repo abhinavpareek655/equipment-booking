@@ -123,7 +123,7 @@ export default function EquipmentManagementPage() {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold">Equipment Inventory</h2>
-              <p className="text-gray-500">Manage all DBT BUILDER equipment</p>
+              <p className="text-gray-500">Manage all CURAJ EBS equipment</p>
             </div>
             <Dialog>
               <DialogTrigger asChild>
