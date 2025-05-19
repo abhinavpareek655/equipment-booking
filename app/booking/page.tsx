@@ -19,6 +19,7 @@ import { Slider } from "@/components/ui/slider"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useForm, FormProvider } from "react-hook-form"
+import { isToday } from "date-fns"
 
 // const equipment = [
 //   { id: "1", name: "Flow Cytometer", category: "Cell Analysis" },
@@ -177,7 +178,7 @@ export default function BookingPage() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus fromDate={new Date()}/>
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -192,33 +193,41 @@ export default function BookingPage() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-4">
-                        <div className="grid gap-2">
-                          <div className="grid grid-cols-2 gap-2">
-                            {["09:00", "10:00", "11:00", "12:00"].map((time) => (
-                              <Button
-                                key={time}
-                                variant={startTime === time ? "default" : "outline"}
-                                onClick={() => setStartTime(time)}
-                                className="text-center"
-                              >
-                                {time}
-                              </Button>
-                            ))}
+                      <div className="grid gap-2">
+                        {["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"].reduce(
+                          (rows, time, i) => {
+                            if (i % 4 === 0) rows.push([]);
+                            rows[rows.length-1].push(time);
+                            return rows;
+                          },
+                          [] as string[][]
+                        ).map((row, ri) => (
+                          <div key={ri} className="grid grid-cols-2 gap-2">
+                            {row.map(time => {
+                              const now = new Date();
+                              const slot = date
+                                ? new Date(date.toDateString() + ` ${time}:00`)
+                                : new Date(time);
+                              const isDisabled =
+                                date?.toDateString() === now.toDateString() &&
+                                slot <= now;
+
+                              return (
+                                <Button
+                                  key={time}
+                                  variant={startTime === time ? "default" : "outline"}
+                                  onClick={() => !isDisabled && setStartTime(time)}
+                                  disabled={isDisabled}
+                                  className="text-center"
+                                >
+                                  {time}
+                                </Button>
+                              );
+                            })}
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {["13:00", "14:00", "15:00", "16:00"].map((time) => (
-                              <Button
-                                key={time}
-                                variant={startTime === time ? "default" : "outline"}
-                                onClick={() => setStartTime(time)}
-                                className="text-center"
-                              >
-                                {time}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      </PopoverContent>
+                        ))}
+                      </div>
+                    </PopoverContent>
                     </Popover>
                   </div>
                 </div>
