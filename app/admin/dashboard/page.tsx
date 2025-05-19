@@ -49,116 +49,6 @@ interface Booking {
   reason?: string
 }
 
-// Mock data for bookings
-// const pendingBookings: Booking[] = [
-//   {
-//     id: 101,
-//     user: "Rahul Sharma",
-//     userEmail: "rahul.sharma@curaj.ac.in",
-//     department: "Biochemistry",
-//     supervisor: "Dr. Anjali Patel",
-//     equipment: "Flow Cytometer",
-//     equipmentId: "1",
-//     date: "2025-05-21",
-//     timeSlot: "09:00 - 10:00",
-//     duration: 1,
-//     purpose: "Cell sorting for analyzing macrophage populations",
-//     status: "Pending", // Add status property with default value
-//     userHistory: [
-//       { date: "2025-04-15", equipment: "Flow Cytometer", status: "Completed" },
-//       { date: "2025-03-22", equipment: "PCR Thermal Cycler", status: "Completed" },
-//     ],
-//   },
-//   {
-//     id: 102,
-//     user: "Priya Singh",
-//     userEmail: "priya.singh@curaj.ac.in",
-//     department: "Molecular Biology",
-//     supervisor: "Dr. Vikram Mehra",
-//     equipment: "PCR Thermal Cycler",
-//     equipmentId: "3",
-//     date: "2025-05-23",
-//     timeSlot: "11:00 - 12:00",
-//     duration: 1,
-//     purpose: "Amplification of genomic DNA samples for sequencing",
-//     status: "Pending", // Add status property with default value
-//     userHistory: [
-//       { date: "2025-04-10", equipment: "PCR Thermal Cycler", status: "Completed" },
-//       { date: "2025-04-02", equipment: "PCR Thermal Cycler", status: "Cancelled" },
-//     ],
-//   },
-//   {
-//     id: 103,
-//     user: "Arjun Kumar",
-//     userEmail: "arjun.kumar@curaj.ac.in",
-//     department: "Microbiology",
-//     supervisor: "Dr. Shobha Rao",
-//     equipment: "HPLC System",
-//     equipmentId: "6",
-//     date: "2025-05-20",
-//     timeSlot: "14:00 - 15:00",
-//     duration: 1,
-//     purpose: "Analyzing antibiotic compounds from bacterial cultures",
-//     status: "Pending", // Add status property with default value
-//     userHistory: [],
-//   },
-// ]
-
-// const allBookings: Booking[] = [
-//   ...pendingBookings,
-//   {
-//     id: 104,
-//     user: "Neha Gupta",
-//     userEmail: "neha.gupta@curaj.ac.in",
-//     department: "Genetics",
-//     supervisor: "Dr. Rajesh Malhotra",
-//     equipment: "Confocal Microscope",
-//     equipmentId: "2",
-//     date: "2025-05-18",
-//     timeSlot: "10:00 - 11:00",
-//     duration: 1,
-//     status: "Approved",
-//     purpose: "Imaging fluorescent protein expression in transfected cells",
-//     userHistory: [{ date: "2025-04-05", equipment: "Confocal Microscope", status: "Completed" }],
-//   },
-//   {
-//     id: 105,
-//     user: "Sanjay Verma",
-//     userEmail: "sanjay.verma@curaj.ac.in",
-//     department: "Biochemistry",
-//     supervisor: "Dr. Anjali Patel",
-//     equipment: "Ultra-centrifuge",
-//     equipmentId: "4",
-//     date: "2025-05-15",
-//     timeSlot: "09:00 - 10:00",
-//     duration: 1,
-//     status: "Rejected",
-//     purpose: "Isolation of subcellular organelles",
-//     reason: "Equipment scheduled for calibration",
-//     userHistory: [
-//       { date: "2025-04-20", equipment: "Ultra-centrifuge", status: "Completed" },
-//       { date: "2025-03-15", equipment: "Flow Cytometer", status: "Completed" },
-//     ],
-//   },
-//   {
-//     id: 106,
-//     user: "Kavita Reddy",
-//     userEmail: "kavita.reddy@curaj.ac.in",
-//     department: "Molecular Biology",
-//     supervisor: "Dr. Vikram Mehra",
-//     equipment: "Mass Spectrometer",
-//     equipmentId: "5",
-//     date: "2025-05-12",
-//     timeSlot: "15:00 - 16:00",
-//     duration: 1,
-//     status: "Completed",
-//     purpose: "Protein identification from gel bands",
-//     userHistory: [
-//       { date: "2025-04-01", equipment: "Mass Spectrometer", status: "Completed" },
-//       { date: "2025-03-20", equipment: "HPLC System", status: "Completed" },
-//     ],
-//   },
-// ]
 
 interface EquipmentInfo {
   id: string;
@@ -170,15 +60,6 @@ interface EquipmentInfo {
   uptime: string;
 }
 
-// Mock data for equipment usage statistics
-// const equipmentStats: EquipmentStat[] = [
-//   { id: 1, name: "Flow Cytometer", totalHours: 42, maintenanceHours: 8, uptime: "95%" },
-//   { id: 2, name: "Confocal Microscope", totalHours: 36, maintenanceHours: 6, uptime: "92%" },
-//   { id: 3, name: "PCR Thermal Cycler", totalHours: 60, maintenanceHours: 2, uptime: "98%" },
-//   { id: 4, name: "Ultra-centrifuge", totalHours: 24, maintenanceHours: 4, uptime: "90%" },
-//   { id: 5, name: "Mass Spectrometer", totalHours: 30, maintenanceHours: 8, uptime: "88%" },
-//   { id: 6, name: "HPLC System", totalHours: 38, maintenanceHours: 4, uptime: "94%" },
-// ]
 
 const assignedInstruments: Instrument[] = [
   { id: 2, name: "Confocal Microscope" },
@@ -223,32 +104,53 @@ export default function AdminDashboardPage() {
               uptime: eq.uptime ?? "--"
             }
           ])
-        )
+        );
 
         const mapped = bookings.map((b: any) => {
-          const startHour = parseInt(b.startTime.split(":"), 10)
-          const endHour = startHour + b.duration
-          const equipmentInfo = equipmentMap.get(b.equipmentId) || { id: "", name: "Unknown", location: "", category: "", totalHours: 0, maintenanceHours: 0, uptime: "--" }
+          // handle populated vs. unpopulated equipmentId
+          const equipmentIdStr =
+            typeof b.equipmentId === "object"
+              ? b.equipmentId._id
+              : b.equipmentId;
+          const equipmentInfo = equipmentMap.get(equipmentIdStr) || {
+            id: "",
+            name: "Unknown",
+            location: "",
+            category: "",
+            totalHours: 0,
+            maintenanceHours: 0,
+            uptime: "--"
+          };
+
+          const startHour = parseInt(b.startTime.split(":")[0], 10);
+          const endHour = startHour + b.duration;
 
           return {
             id: b._id,
-            user: b.userEmail.split("@")[0].replace(".", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()),
+            user: b.userEmail
+              .split("@")[0]
+              .replace(".", " ")
+              .replace(/\b\w/g, (l: string) => l.toUpperCase()),
             userEmail: b.userEmail,
             department: b.department,
             supervisor: b.supervisor,
             equipment: equipmentInfo.name,
-            equipmentId: b.equipmentId,
+            equipmentId: equipmentIdStr,
             date: b.date,
-            timeSlot: `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
+            timeSlot: `${b.startTime} - ${endHour
+              .toString()
+              .padStart(2, "0")}:00`,
             duration: b.duration,
             purpose: b.purpose,
             status: b.status ?? "Pending",
-            userHistory: [],
-          }
-        })
+            userHistory: []
+          };
+        });
 
-        setAllBookings(mapped)
-        setPendingBookings(mapped.filter((b: Booking) => (b.status ?? "").toLowerCase() === "pending"))
+        setAllBookings(mapped);
+        setPendingBookings(
+          mapped.filter((b: Booking) => (b.status ?? "").toLowerCase() === "pending")
+        );
         setEquipmentStats(
           equipmentList.map((eq: any) => ({
             id: eq._id.toString(),
@@ -259,10 +161,13 @@ export default function AdminDashboardPage() {
             maintenanceHours: eq.maintenanceHours ?? 0,
             uptime: eq.uptime ?? "--"
           }))
-        )
+        );
       })
-      .catch((err) => console.error("Failed to fetch bookings or equipment:", err))
-  }, [])
+      .catch(err =>
+        console.error("Failed to fetch bookings or equipment:", err)
+      );
+    }, []);
+
 
   // Filter bookings based on assigned instruments
   const filteredPendingBookings = pendingBookings.filter(
@@ -291,43 +196,92 @@ export default function AdminDashboardPage() {
   }
 
   const confirmApproval = async () => {
-    if (!selectedBooking) return
+    if (!selectedBooking) return;
+    console.debug("🛠️ confirmApproval called for booking:", selectedBooking);
 
-    // …your existing console.log / API call…
+    try {
+      const payload = {
+        status: "approved",
+        date: approvalDate!.toISOString().slice(0, 10),
+        startTime: approvalStartTime,
+        duration: approvalDuration,
+      };
+      console.debug("📤 PATCH payload:", payload);
 
-    // 1) Remove from pending
-    setPendingBookings((prev) =>
-      prev.filter((b) => b.id !== selectedBooking.id)
-    )
+      const res = await fetch(`/api/booking/${selectedBooking.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      console.debug("📥 Response status:", res.status);
 
-    // 2) Update status in the full list
-    setAllBookings((prev) =>
-      prev.map((b) =>
-        b.id === selectedBooking.id ? { ...b, status: "Approved" } : b
-      )
-    )
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("❌ Failed to approve booking:", err);
+        return;
+      }
+      const updatedBooking = await res.json();
+      console.debug("✅ Booking approved:", updatedBooking);
 
-    setShowApprovalDialog(false)
-  }
-
+      // update local state
+      setPendingBookings(prev =>
+        prev.filter(b => b.id !== selectedBooking.id)
+      );
+      setAllBookings(prev =>
+        prev.map(b =>
+          b.id === selectedBooking.id ? { ...b, status: "Approved" } : b
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error in confirmApproval:", error);
+    } finally {
+      setShowApprovalDialog(false);
+    }
+  };
 
   const confirmRejection = async () => {
-    if (!selectedBooking) return
+    if (!selectedBooking) return;
+    console.debug("🛠️ confirmRejection called for booking:", selectedBooking);
 
-    // …console.log or API call…
+    try {
+      const payload = {
+        status: "rejected",
+        reason: rejectionReason,
+      };
+      console.debug("📤 PATCH payload:", payload);
 
-    setPendingBookings((prev) =>
-      prev.filter((b) => b.id !== selectedBooking.id)
-    )
-    setAllBookings((prev) =>
-      prev.map((b) =>
-        b.id === selectedBooking.id ? { ...b, status: "Rejected", reason: rejectionReason } : b
-      )
-    )
+      const res = await fetch(`/api/booking/${selectedBooking.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      console.debug("📥 Response status:", res.status);
 
-    setShowRejectionDialog(false)
-  }
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("❌ Failed to reject booking:", err);
+        return;
+      }
+      const updatedBooking = await res.json();
+      console.debug("✅ Booking rejected:", updatedBooking);
 
+      // update local state
+      setPendingBookings(prev =>
+        prev.filter(b => b.id !== selectedBooking.id)
+      );
+      setAllBookings(prev =>
+        prev.map(b =>
+          b.id === selectedBooking.id
+            ? { ...b, status: "Rejected", reason: rejectionReason }
+            : b
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error in confirmRejection:", error);
+    } finally {
+      setShowRejectionDialog(false);
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
