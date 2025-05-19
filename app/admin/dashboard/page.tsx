@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -50,144 +50,144 @@ interface Booking {
 }
 
 // Mock data for bookings
-const pendingBookings: Booking[] = [
-  {
-    id: 101,
-    user: "Rahul Sharma",
-    userEmail: "rahul.sharma@curaj.ac.in",
-    department: "Biochemistry",
-    supervisor: "Dr. Anjali Patel",
-    equipment: "Flow Cytometer",
-    equipmentId: "1",
-    date: "2025-05-21",
-    timeSlot: "09:00 - 10:00",
-    duration: 1,
-    purpose: "Cell sorting for analyzing macrophage populations",
-    status: "Pending", // Add status property with default value
-    userHistory: [
-      { date: "2025-04-15", equipment: "Flow Cytometer", status: "Completed" },
-      { date: "2025-03-22", equipment: "PCR Thermal Cycler", status: "Completed" },
-    ],
-  },
-  {
-    id: 102,
-    user: "Priya Singh",
-    userEmail: "priya.singh@curaj.ac.in",
-    department: "Molecular Biology",
-    supervisor: "Dr. Vikram Mehra",
-    equipment: "PCR Thermal Cycler",
-    equipmentId: "3",
-    date: "2025-05-23",
-    timeSlot: "11:00 - 12:00",
-    duration: 1,
-    purpose: "Amplification of genomic DNA samples for sequencing",
-    status: "Pending", // Add status property with default value
-    userHistory: [
-      { date: "2025-04-10", equipment: "PCR Thermal Cycler", status: "Completed" },
-      { date: "2025-04-02", equipment: "PCR Thermal Cycler", status: "Cancelled" },
-    ],
-  },
-  {
-    id: 103,
-    user: "Arjun Kumar",
-    userEmail: "arjun.kumar@curaj.ac.in",
-    department: "Microbiology",
-    supervisor: "Dr. Shobha Rao",
-    equipment: "HPLC System",
-    equipmentId: "6",
-    date: "2025-05-20",
-    timeSlot: "14:00 - 15:00",
-    duration: 1,
-    purpose: "Analyzing antibiotic compounds from bacterial cultures",
-    status: "Pending", // Add status property with default value
-    userHistory: [],
-  },
-]
+// const pendingBookings: Booking[] = [
+//   {
+//     id: 101,
+//     user: "Rahul Sharma",
+//     userEmail: "rahul.sharma@curaj.ac.in",
+//     department: "Biochemistry",
+//     supervisor: "Dr. Anjali Patel",
+//     equipment: "Flow Cytometer",
+//     equipmentId: "1",
+//     date: "2025-05-21",
+//     timeSlot: "09:00 - 10:00",
+//     duration: 1,
+//     purpose: "Cell sorting for analyzing macrophage populations",
+//     status: "Pending", // Add status property with default value
+//     userHistory: [
+//       { date: "2025-04-15", equipment: "Flow Cytometer", status: "Completed" },
+//       { date: "2025-03-22", equipment: "PCR Thermal Cycler", status: "Completed" },
+//     ],
+//   },
+//   {
+//     id: 102,
+//     user: "Priya Singh",
+//     userEmail: "priya.singh@curaj.ac.in",
+//     department: "Molecular Biology",
+//     supervisor: "Dr. Vikram Mehra",
+//     equipment: "PCR Thermal Cycler",
+//     equipmentId: "3",
+//     date: "2025-05-23",
+//     timeSlot: "11:00 - 12:00",
+//     duration: 1,
+//     purpose: "Amplification of genomic DNA samples for sequencing",
+//     status: "Pending", // Add status property with default value
+//     userHistory: [
+//       { date: "2025-04-10", equipment: "PCR Thermal Cycler", status: "Completed" },
+//       { date: "2025-04-02", equipment: "PCR Thermal Cycler", status: "Cancelled" },
+//     ],
+//   },
+//   {
+//     id: 103,
+//     user: "Arjun Kumar",
+//     userEmail: "arjun.kumar@curaj.ac.in",
+//     department: "Microbiology",
+//     supervisor: "Dr. Shobha Rao",
+//     equipment: "HPLC System",
+//     equipmentId: "6",
+//     date: "2025-05-20",
+//     timeSlot: "14:00 - 15:00",
+//     duration: 1,
+//     purpose: "Analyzing antibiotic compounds from bacterial cultures",
+//     status: "Pending", // Add status property with default value
+//     userHistory: [],
+//   },
+// ]
 
-const allBookings: Booking[] = [
-  ...pendingBookings,
-  {
-    id: 104,
-    user: "Neha Gupta",
-    userEmail: "neha.gupta@curaj.ac.in",
-    department: "Genetics",
-    supervisor: "Dr. Rajesh Malhotra",
-    equipment: "Confocal Microscope",
-    equipmentId: "2",
-    date: "2025-05-18",
-    timeSlot: "10:00 - 11:00",
-    duration: 1,
-    status: "Approved",
-    purpose: "Imaging fluorescent protein expression in transfected cells",
-    userHistory: [{ date: "2025-04-05", equipment: "Confocal Microscope", status: "Completed" }],
-  },
-  {
-    id: 105,
-    user: "Sanjay Verma",
-    userEmail: "sanjay.verma@curaj.ac.in",
-    department: "Biochemistry",
-    supervisor: "Dr. Anjali Patel",
-    equipment: "Ultra-centrifuge",
-    equipmentId: "4",
-    date: "2025-05-15",
-    timeSlot: "09:00 - 10:00",
-    duration: 1,
-    status: "Rejected",
-    purpose: "Isolation of subcellular organelles",
-    reason: "Equipment scheduled for calibration",
-    userHistory: [
-      { date: "2025-04-20", equipment: "Ultra-centrifuge", status: "Completed" },
-      { date: "2025-03-15", equipment: "Flow Cytometer", status: "Completed" },
-    ],
-  },
-  {
-    id: 106,
-    user: "Kavita Reddy",
-    userEmail: "kavita.reddy@curaj.ac.in",
-    department: "Molecular Biology",
-    supervisor: "Dr. Vikram Mehra",
-    equipment: "Mass Spectrometer",
-    equipmentId: "5",
-    date: "2025-05-12",
-    timeSlot: "15:00 - 16:00",
-    duration: 1,
-    status: "Completed",
-    purpose: "Protein identification from gel bands",
-    userHistory: [
-      { date: "2025-04-01", equipment: "Mass Spectrometer", status: "Completed" },
-      { date: "2025-03-20", equipment: "HPLC System", status: "Completed" },
-    ],
-  },
-]
+// const allBookings: Booking[] = [
+//   ...pendingBookings,
+//   {
+//     id: 104,
+//     user: "Neha Gupta",
+//     userEmail: "neha.gupta@curaj.ac.in",
+//     department: "Genetics",
+//     supervisor: "Dr. Rajesh Malhotra",
+//     equipment: "Confocal Microscope",
+//     equipmentId: "2",
+//     date: "2025-05-18",
+//     timeSlot: "10:00 - 11:00",
+//     duration: 1,
+//     status: "Approved",
+//     purpose: "Imaging fluorescent protein expression in transfected cells",
+//     userHistory: [{ date: "2025-04-05", equipment: "Confocal Microscope", status: "Completed" }],
+//   },
+//   {
+//     id: 105,
+//     user: "Sanjay Verma",
+//     userEmail: "sanjay.verma@curaj.ac.in",
+//     department: "Biochemistry",
+//     supervisor: "Dr. Anjali Patel",
+//     equipment: "Ultra-centrifuge",
+//     equipmentId: "4",
+//     date: "2025-05-15",
+//     timeSlot: "09:00 - 10:00",
+//     duration: 1,
+//     status: "Rejected",
+//     purpose: "Isolation of subcellular organelles",
+//     reason: "Equipment scheduled for calibration",
+//     userHistory: [
+//       { date: "2025-04-20", equipment: "Ultra-centrifuge", status: "Completed" },
+//       { date: "2025-03-15", equipment: "Flow Cytometer", status: "Completed" },
+//     ],
+//   },
+//   {
+//     id: 106,
+//     user: "Kavita Reddy",
+//     userEmail: "kavita.reddy@curaj.ac.in",
+//     department: "Molecular Biology",
+//     supervisor: "Dr. Vikram Mehra",
+//     equipment: "Mass Spectrometer",
+//     equipmentId: "5",
+//     date: "2025-05-12",
+//     timeSlot: "15:00 - 16:00",
+//     duration: 1,
+//     status: "Completed",
+//     purpose: "Protein identification from gel bands",
+//     userHistory: [
+//       { date: "2025-04-01", equipment: "Mass Spectrometer", status: "Completed" },
+//       { date: "2025-03-20", equipment: "HPLC System", status: "Completed" },
+//     ],
+//   },
+// ]
 
-interface EquipmentStat {
-  id: number
-  name: string
-  totalHours: number
-  maintenanceHours: number
-  uptime: string
+interface EquipmentInfo {
+  id: string;
+  name: string;
+  location: string;
+  category: string;
+  totalHours: number;
+  maintenanceHours: number;
+  uptime: string;
 }
 
 // Mock data for equipment usage statistics
-const equipmentStats: EquipmentStat[] = [
-  { id: 1, name: "Flow Cytometer", totalHours: 42, maintenanceHours: 8, uptime: "95%" },
-  { id: 2, name: "Confocal Microscope", totalHours: 36, maintenanceHours: 6, uptime: "92%" },
-  { id: 3, name: "PCR Thermal Cycler", totalHours: 60, maintenanceHours: 2, uptime: "98%" },
-  { id: 4, name: "Ultra-centrifuge", totalHours: 24, maintenanceHours: 4, uptime: "90%" },
-  { id: 5, name: "Mass Spectrometer", totalHours: 30, maintenanceHours: 8, uptime: "88%" },
-  { id: 6, name: "HPLC System", totalHours: 38, maintenanceHours: 4, uptime: "94%" },
-]
+// const equipmentStats: EquipmentStat[] = [
+//   { id: 1, name: "Flow Cytometer", totalHours: 42, maintenanceHours: 8, uptime: "95%" },
+//   { id: 2, name: "Confocal Microscope", totalHours: 36, maintenanceHours: 6, uptime: "92%" },
+//   { id: 3, name: "PCR Thermal Cycler", totalHours: 60, maintenanceHours: 2, uptime: "98%" },
+//   { id: 4, name: "Ultra-centrifuge", totalHours: 24, maintenanceHours: 4, uptime: "90%" },
+//   { id: 5, name: "Mass Spectrometer", totalHours: 30, maintenanceHours: 8, uptime: "88%" },
+//   { id: 6, name: "HPLC System", totalHours: 38, maintenanceHours: 4, uptime: "94%" },
+// ]
 
+const assignedInstruments: Instrument[] = [
+  { id: 2, name: "Confocal Microscope" },
+]
 interface Instrument {
   id: number
   name: string
 }
 
-// Mock data for assigned instruments
-const assignedInstruments: Instrument[] = [
-  { id: 1, name: "Flow Cytometer" },
-  { id: 3, name: "PCR Thermal Cycler" },
-]
 
 export default function AdminDashboardPage() {
   const [tab, setTab] = useState("pending")
@@ -200,6 +200,69 @@ export default function AdminDashboardPage() {
   const [showRejectionDialog, setShowRejectionDialog] = useState(false)
   const [showUserHistoryDialog, setShowUserHistoryDialog] = useState(false)
   const [filterInstrument, setFilterInstrument] = useState("all")
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([])
+  const [allBookings, setAllBookings] = useState<Booking[]>([])
+  const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/booking").then(res => res.json()),
+      fetch("/api/equipment").then(res => res.json())
+    ])
+      .then(([bookings, equipmentList]) => {
+        const equipmentMap = new Map<string, EquipmentInfo>(
+          equipmentList.map((eq: any) => [
+            eq._id,
+            {
+              id: eq._id,
+              name: eq.name,
+              location: eq.location,
+              category: eq.category,
+              totalHours: eq.totalHours ?? 0,
+              maintenanceHours: eq.maintenanceHours ?? 0,
+              uptime: eq.uptime ?? "--"
+            }
+          ])
+        )
+
+        const mapped = bookings.map((b: any) => {
+          const startHour = parseInt(b.startTime.split(":"), 10)
+          const endHour = startHour + b.duration
+          const equipmentInfo = equipmentMap.get(b.equipmentId) || { id: "", name: "Unknown", location: "", category: "", totalHours: 0, maintenanceHours: 0, uptime: "--" }
+
+          return {
+            id: b._id,
+            user: b.userEmail.split("@")[0].replace(".", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()),
+            userEmail: b.userEmail,
+            department: b.department,
+            supervisor: b.supervisor,
+            equipment: equipmentInfo.name,
+            equipmentId: b.equipmentId,
+            date: b.date,
+            timeSlot: `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
+            duration: b.duration,
+            purpose: b.purpose,
+            status: b.status ?? "Pending",
+            userHistory: [],
+          }
+        })
+
+        setAllBookings(mapped)
+        setPendingBookings(mapped.filter((b: Booking) => (b.status ?? "").toLowerCase() === "pending"))
+        setEquipmentStats(
+          equipmentList.map((eq: any) => ({
+            id: eq._id.toString(),
+            name: eq.name,
+            location: eq.location,
+            category: eq.category,
+            totalHours: eq.totalHours ?? 0,
+            maintenanceHours: eq.maintenanceHours ?? 0,
+            uptime: eq.uptime ?? "--"
+          }))
+        )
+      })
+      .catch((err) => console.error("Failed to fetch bookings or equipment:", err))
+  }, [])
 
   // Filter bookings based on assigned instruments
   const filteredPendingBookings = pendingBookings.filter(
@@ -227,27 +290,44 @@ export default function AdminDashboardPage() {
     setShowUserHistoryDialog(true)
   }
 
-  const confirmApproval = () => {
+  const confirmApproval = async () => {
     if (!selectedBooking) return
 
-    // In a real app, you would send this to your backend
-    console.log("Approved booking", selectedBooking.id, {
-      date: approvalDate,
-      startTime: approvalStartTime,
-      duration: approvalDuration,
-    })
+    // …your existing console.log / API call…
+
+    // 1) Remove from pending
+    setPendingBookings((prev) =>
+      prev.filter((b) => b.id !== selectedBooking.id)
+    )
+
+    // 2) Update status in the full list
+    setAllBookings((prev) =>
+      prev.map((b) =>
+        b.id === selectedBooking.id ? { ...b, status: "Approved" } : b
+      )
+    )
+
     setShowApprovalDialog(false)
   }
 
-  const confirmRejection = () => {
+
+  const confirmRejection = async () => {
     if (!selectedBooking) return
 
-    // In a real app, you would send this to your backend
-    console.log("Rejected booking", selectedBooking.id, {
-      reason: rejectionReason,
-    })
+    // …console.log or API call…
+
+    setPendingBookings((prev) =>
+      prev.filter((b) => b.id !== selectedBooking.id)
+    )
+    setAllBookings((prev) =>
+      prev.map((b) =>
+        b.id === selectedBooking.id ? { ...b, status: "Rejected", reason: rejectionReason } : b
+      )
+    )
+
     setShowRejectionDialog(false)
   }
+
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -502,8 +582,8 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {equipmentStats
-                  .filter((equipment) => assignedInstruments.some((instrument) => instrument.id === equipment.id))
-                  .map((equipment) => (
+                  .filter((equipment) => assignedInstruments.some((instrument) => instrument.id.toString() === equipment.id))
+                  .map((equipment, index, arr) => (
                     <div key={equipment.id}>
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-medium">{equipment.name}</span>
@@ -519,7 +599,7 @@ export default function AdminDashboardPage() {
                         <span>Uptime: {equipment.uptime}</span>
                         <span>Maintenance: {equipment.maintenanceHours}h</span>
                       </div>
-                      {equipment.id !== equipmentStats.length && <Separator className="my-3" />}
+                      {index !== arr.length - 1 && <Separator className="my-3" />}
                     </div>
                   ))}
               </div>

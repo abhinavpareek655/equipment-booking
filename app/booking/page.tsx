@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,20 +20,21 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useForm, FormProvider } from "react-hook-form"
 
-const equipment = [
-  { id: "1", name: "Flow Cytometer", category: "Cell Analysis" },
-  { id: "2", name: "Confocal Microscope", category: "Microscopy" },
-  { id: "3", name: "PCR Thermal Cycler", category: "Molecular Biology" },
-  { id: "4", name: "Ultra-centrifuge", category: "Separation" },
-  { id: "5", name: "Mass Spectrometer", category: "Analysis" },
-  { id: "6", name: "HPLC System", category: "Chromatography" },
-]
+// const equipment = [
+//   { id: "1", name: "Flow Cytometer", category: "Cell Analysis" },
+//   { id: "2", name: "Confocal Microscope", category: "Microscopy" },
+//   { id: "3", name: "PCR Thermal Cycler", category: "Molecular Biology" },
+//   { id: "4", name: "Ultra-centrifuge", category: "Separation" },
+//   { id: "5", name: "Mass Spectrometer", category: "Analysis" },
+//   { id: "6", name: "HPLC System", category: "Chromatography" },
+// ]
 
 export default function BookingPage() {
   const searchParams = useSearchParams()
   const equipmentId = searchParams.get("equipment")
   const { toast } = useToast()
 
+  const [equipmentList, setEquipmentList] = useState<any[]>([])
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [startTime, setStartTime] = useState<string>("09:00")
   const [duration, setDuration] = useState<number>(1)
@@ -42,8 +43,14 @@ export default function BookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionStatus, setSubmissionStatus] = useState<"idle" | "success" | "error">("idle")
 
+  useEffect(() => {
+    fetch("/api/equipment")
+      .then((r) => r.json())
+      .then(setEquipmentList)
+      .catch(console.error)
+  }, [])
   // Find the equipment details if an ID was provided
-  const equipmentDetails = equipment.find((item) => item.id === selectedEquipment)
+  const equipmentDetails = equipmentList.find((item) => item._id === selectedEquipment)
   const formMethods = useForm()
 
   // Calculate end time based on start time and duration
@@ -60,21 +67,35 @@ export default function BookingPage() {
 
   const endTime = calculateEndTime()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setSubmissionStatus("success")
-
-      toast({
-        title: "Booking Request Submitted",
-        description: "Your request has been sent to the instrument administrators for approval.",
-      })
-    }, 1500)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+   e.preventDefault()
+   setIsSubmitting(true)
+   try {
+     const body = {
+       equipmentId: selectedEquipment,
+       date: format(date!, "yyyy-MM-dd"),
+       startTime,
+       duration,
+       ...formMethods.getValues(), // supervisor, department, purpose
+     }
+     const res = await fetch("/api/booking", {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify(body),
+     })
+     if (!res.ok) throw new Error(await res.text())
+     setSubmissionStatus("success")
+     toast({
+       title: "Booking Request Submitted",
+       description: "Your request has been sent to the instrument administrators for approval.",
+     })
+   } catch (err: any) {
+     setSubmissionStatus("error")
+     toast({ title: "Error", description: err.message || "Booking failed" })
+   } finally {
+     setIsSubmitting(false)
+   }
+}
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -124,8 +145,8 @@ export default function BookingPage() {
                       <SelectValue placeholder="Select equipment..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {equipment.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
+                      {equipmentList.map((item) => (
+                        <SelectItem key={item._id} value={item._id}>
                           {item.name} ({item.category})
                         </SelectItem>
                       ))}
@@ -221,6 +242,7 @@ export default function BookingPage() {
                     <span>2 hours</span>
                     <span>3 hours</span>
                     <span>4 hours</span>
+                    <span>5 hours</span>
                   </div>
                 </div>
 
@@ -239,11 +261,11 @@ export default function BookingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <FormLabel htmlFor="supervisor">Supervisor/PI Name</FormLabel>
-                    <Input id="supervisor" required />
+                    <Input id="supervisor" required {...formMethods.register("supervisor")} />
                   </div>
                   <div>
                     <FormLabel htmlFor="department">Department</FormLabel>
-                    <Input id="department" required />
+                    <Input id="department" required {...formMethods.register("department")} />
                   </div>
                 </div>
 
@@ -254,6 +276,7 @@ export default function BookingPage() {
                     placeholder="Briefly describe the experiment you plan to conduct..."
                     className="min-h-[100px]"
                     required
+                    {...formMethods.register("purpose")} 
                   />
                 </div>
 

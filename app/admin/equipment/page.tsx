@@ -21,59 +21,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Settings2, AlertCircle, CalendarRange, History, Info } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useEffect } from "react"
 
-const equipment = [
-  {
-    id: 1,
-    name: "Flow Cytometer",
-    model: "BD FACSCanto II",
-    category: "Cell Analysis",
-    location: "Lab 101",
-    status: "Available",
-    lastMaintenance: "2025-04-10",
-    nextMaintenance: "2025-06-10",
-    description: "Flow cytometer for analyzing and sorting cells based on fluorescence markers.",
-  },
-  {
-    id: 2,
-    name: "Confocal Microscope",
-    model: "Zeiss LSM 880",
-    category: "Microscopy",
-    location: "Lab 102",
-    status: "Maintenance",
-    lastMaintenance: "2025-05-01",
-    nextMaintenance: "2025-05-20",
-    description: "Advanced confocal microscope with Airyscan super-resolution capability.",
-  },
-  {
-    id: 3,
-    name: "PCR Thermal Cycler",
-    model: "Bio-Rad CFX96",
-    category: "Molecular Biology",
-    location: "Lab 103",
-    status: "Available",
-    lastMaintenance: "2025-03-15",
-    nextMaintenance: "2025-06-15",
-    description: "Real-time PCR system for nucleic acid amplification and quantification.",
-  },
-  {
-    id: 4,
-    name: "Ultra-centrifuge",
-    model: "Beckman Coulter Optima XPN",
-    category: "Separation",
-    location: "Lab 104",
-    status: "Available",
-    lastMaintenance: "2025-04-22",
-    nextMaintenance: "2025-07-22",
-    description: "High-speed centrifuge for separating subcellular components and macromolecules.",
-  },
-]
+type EquipmentItem = {
+  id: string
+  name: string
+  model: string
+  category: string
+  location: string
+  status: string
+  lastMaintenance: string
+  nextMaintenance: string
+  description: string
+}
 
 // Maintenance history mock data
 const maintenanceHistory = [
   {
     id: 1,
-    equipmentId: 1,
+    equipmentId: "682a33140458651e2f380ea3",
     date: "2025-04-10",
     type: "Scheduled",
     technician: "Raj Kumar",
@@ -81,7 +47,7 @@ const maintenanceHistory = [
   },
   {
     id: 2,
-    equipmentId: 1,
+    equipmentId: "682a33140458651e2f380ea3",
     date: "2025-02-15",
     type: "Scheduled",
     technician: "Raj Kumar",
@@ -89,7 +55,7 @@ const maintenanceHistory = [
   },
   {
     id: 3,
-    equipmentId: 2,
+    equipmentId: "682a33140458651e2f380ea4",
     date: "2025-05-01",
     type: "Repair",
     technician: "Suresh Patel",
@@ -97,7 +63,7 @@ const maintenanceHistory = [
   },
   {
     id: 4,
-    equipmentId: 3,
+    equipmentId: "682a33140458651e2f380ea5",
     date: "2025-03-15",
     type: "Scheduled",
     technician: "Anita Singh",
@@ -107,13 +73,40 @@ const maintenanceHistory = [
 
 export default function EquipmentManagementPage() {
   const [activeTab, setActiveTab] = useState("inventory")
-  const [selectedEquipment, setSelectedEquipment] = useState<number | null>(null)
-
-  const handleMaintenanceRequest = (equipmentId: number) => {
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null)
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([]) 
+  
+  const handleMaintenanceRequest = (equipmentId: string) => {
     setSelectedEquipment(equipmentId)
     // In a real application, you would open a maintenance request dialog
     alert(`Maintenance request submitted for equipment ID: ${equipmentId}`)
   }
+
+  useEffect(() => {
+    console.log("📦 Fetching equipment from /api/equipment")
+    fetch("/api/equipment")
+      .then(async (res) => {
+        const text = await res.text()
+        console.log("📄 Raw response:", text)
+        if (!res.ok) throw new Error(`❌ Status ${res.status}`)
+        return JSON.parse(text)
+      })
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item._id,
+          name: item.name,
+          model: item.model || "Unknown",
+          category: item.category || "Uncategorized",
+          location: item.location || "N/A",
+          status: item.status || "Unknown",
+          lastMaintenance: item.lastMaintenance || new Date().toISOString(),
+          nextMaintenance: item.nextMaintenance || new Date().toISOString(),
+          description: item.description || "No description",
+        }))
+        setEquipment(mapped)
+      })
+      .catch((err) => console.error("🚨 Fetch error:", err))
+  }, [])
 
   return (
     <div className="container mx-auto py-8 px-4">
