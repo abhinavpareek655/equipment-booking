@@ -16,7 +16,7 @@ const bookings = [
     date: "2025-05-20",
     timeSlot: "10:00 - 11:00",
     location: "Lab 101",
-    status: "Approved",
+    status: "approved",
     purpose: "Cell sorting for cancer research project",
   },
   {
@@ -25,7 +25,7 @@ const bookings = [
     date: "2025-05-22",
     timeSlot: "14:00 - 15:00",
     location: "Lab 103",
-    status: "Pending",
+    status: "pending",
     purpose: "DNA amplification for genomic analysis",
   },
   {
@@ -34,7 +34,7 @@ const bookings = [
     date: "2025-05-25",
     timeSlot: "09:00 - 10:00",
     location: "Lab 106",
-    status: "Rejected",
+    status: "rejected",
     reason: "Equipment scheduled for maintenance",
     purpose: "Protein purification",
   },
@@ -55,11 +55,11 @@ export default function MyBookingsPage() {
   // Filter bookings based on tab
   const filteredBookings = bookings.filter((booking) => {
     if (activeTab === "upcoming") {
-      return booking.status === "Approved" || booking.status === "Pending"
+      return booking.status === "approved" || booking.status === "pending"
     } else if (activeTab === "completed") {
       return booking.status === "Completed"
     } else if (activeTab === "rejected") {
-      return booking.status === "Rejected"
+      return booking.status === "rejected"
     }
     return true // All bookings tab
   })
@@ -72,7 +72,7 @@ export default function MyBookingsPage() {
         <TabsList>
           <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          <TabsTrigger value="rejected">rejected</TabsTrigger>
           <TabsTrigger value="all">All Bookings</TabsTrigger>
         </TabsList>
 
@@ -94,9 +94,9 @@ export default function MyBookingsPage() {
                     </div>
                     <Badge
                       variant={
-                        booking.status === "Approved"
+                        booking.status === "approved"
                           ? "default"
-                          : booking.status === "Pending"
+                          : booking.status === "pending"
                             ? "secondary"
                             : booking.status === "Completed"
                               ? "outline"
@@ -128,7 +128,7 @@ export default function MyBookingsPage() {
                     <p className="text-sm text-gray-600">{booking.purpose}</p>
                   </div>
 
-                  {booking.status === "Rejected" && booking.reason && (
+                  {booking.status === "rejected" && booking.reason && (
                     <Alert variant="destructive" className="mt-2">
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>Rejection Reason</AlertTitle>
@@ -137,12 +137,12 @@ export default function MyBookingsPage() {
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                  {booking.status === "Pending" && (
+                  {booking.status === "pending" && (
                     <Button variant="destructive" size="sm">
                       Cancel Request
                     </Button>
                   )}
-                  {booking.status === "Approved" && (
+                  {booking.status === "approved" && (
                     <>
                       <Button variant="destructive" size="sm">
                         Cancel Booking

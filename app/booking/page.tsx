@@ -242,7 +242,6 @@ export default function BookingPage() {
                     <span>2 hours</span>
                     <span>3 hours</span>
                     <span>4 hours</span>
-                    <span>5 hours</span>
                   </div>
                 </div>
 

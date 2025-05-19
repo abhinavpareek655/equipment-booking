@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
   const [showRejectionDialog, setShowRejectionDialog] = useState(false)
   const [showUserHistoryDialog, setShowUserHistoryDialog] = useState(false)
   const [filterInstrument, setFilterInstrument] = useState("all")
-  const [pendingBookings, setPendingBookings] = useState<Booking[]>([])
+  const [pendingBookings, setpendingBookings] = useState<Booking[]>([])
   const [allBookings, setAllBookings] = useState<Booking[]>([])
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
 
@@ -142,13 +142,13 @@ export default function AdminDashboardPage() {
               .padStart(2, "0")}:00`,
             duration: b.duration,
             purpose: b.purpose,
-            status: b.status ?? "Pending",
+            status: b.status ?? "pending",
             userHistory: []
           };
         });
 
         setAllBookings(mapped);
-        setPendingBookings(
+        setpendingBookings(
           mapped.filter((b: Booking) => (b.status ?? "").toLowerCase() === "pending")
         );
         setEquipmentStats(
@@ -170,7 +170,7 @@ export default function AdminDashboardPage() {
 
 
   // Filter bookings based on assigned instruments
-  const filteredPendingBookings = pendingBookings.filter(
+  const filteredpendingBookings = pendingBookings.filter(
     (booking) =>
       filterInstrument === "all" ||
       assignedInstruments.some((instrument) => instrument.id.toString() === booking.equipmentId),
@@ -224,12 +224,12 @@ export default function AdminDashboardPage() {
       console.debug("✅ Booking approved:", updatedBooking);
 
       // update local state
-      setPendingBookings(prev =>
+      setpendingBookings(prev =>
         prev.filter(b => b.id !== selectedBooking.id)
       );
       setAllBookings(prev =>
         prev.map(b =>
-          b.id === selectedBooking.id ? { ...b, status: "Approved" } : b
+          b.id === selectedBooking.id ? { ...b, status: "approved" } : b
         )
       );
     } catch (error) {
@@ -266,13 +266,13 @@ export default function AdminDashboardPage() {
       console.debug("✅ Booking rejected:", updatedBooking);
 
       // update local state
-      setPendingBookings(prev =>
+      setpendingBookings(prev =>
         prev.filter(b => b.id !== selectedBooking.id)
       );
       setAllBookings(prev =>
         prev.map(b =>
           b.id === selectedBooking.id
-            ? { ...b, status: "Rejected", reason: rejectionReason }
+            ? { ...b, status: "rejected", reason: rejectionReason }
             : b
         )
       );
@@ -291,10 +291,10 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Pending Requests</CardTitle>
+            <CardTitle className="text-xl">pending Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{filteredPendingBookings.length}</div>
+            <div className="text-3xl font-bold">{filteredpendingBookings.length}</div>
             <p className="text-sm text-gray-500">Requests awaiting approval</p>
           </CardContent>
           <CardFooter>
@@ -345,7 +345,7 @@ export default function AdminDashboardPage() {
             <CardContent>
               <Tabs defaultValue="pending" className="space-y-4" onValueChange={setTab}>
                 <TabsList>
-                  <TabsTrigger value="pending">Pending ({filteredPendingBookings.length})</TabsTrigger>
+                  <TabsTrigger value="pending">pending ({filteredpendingBookings.length})</TabsTrigger>
                   <TabsTrigger value="all">All Bookings</TabsTrigger>
                 </TabsList>
 
@@ -370,12 +370,12 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {filteredPendingBookings.length === 0 ? (
+                  {filteredpendingBookings.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       No pending requests for your assigned instruments
                     </div>
                   ) : (
-                    filteredPendingBookings.map((booking) => (
+                    filteredpendingBookings.map((booking) => (
                       <Card key={booking.id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
@@ -462,9 +462,9 @@ export default function AdminDashboardPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Status</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="approved">Approved</SelectItem>
-                          <SelectItem value="rejected">Rejected</SelectItem>
+                          <SelectItem value="pending">pending</SelectItem>
+                          <SelectItem value="approved">approved</SelectItem>
+                          <SelectItem value="rejected">rejected</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
@@ -481,9 +481,9 @@ export default function AdminDashboardPage() {
                           </div>
                           <Badge
                             variant={
-                              booking.status === "Pending"
+                              booking.status === "pending"
                                 ? "secondary"
-                                : booking.status === "Approved"
+                                : booking.status === "approved" || "approved"
                                   ? "default"
                                   : booking.status === "Completed"
                                     ? "outline"
