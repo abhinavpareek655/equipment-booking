@@ -9,7 +9,7 @@ export default function HomePage() {
       <div className="space-y-6 text-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            DBT BUILDER Equipment Booking System
+            Equipment Booking System
           </h1>
           <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl">
             Central University of Rajasthan - School of Life Sciences
