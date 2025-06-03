@@ -23,8 +23,10 @@ type EquipmentItem = {
 
 export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+  setLoading(true)
   console.log("📦 Fetching /api/equipment...")
 
   fetch("/api/equipment")
@@ -54,12 +56,40 @@ export default function EquipmentPage() {
       }))
 
       setEquipment(mapped)
+      setLoading(false)
     })
     .catch((err) => {
       console.error("🚨 Fetch error:", err)
     })
+    .catch(() => setLoading(false))
 }, [])
 
+  if (loading) { 
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-8">Equipment Catalog</h1>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="rounded-lg bg-gray-200 animate-pulse overflow-hidden"
+            >
+              <div className="aspect-video w-full bg-gray-300" />
+              <div className="p-4 space-y-3">
+                <div className="h-5 bg-gray-300 rounded w-2/3" />
+                <div className="h-4 bg-gray-300 rounded w-1/3" />
+                <div className="h-3 bg-gray-300 rounded w-1/2" />
+                <div className="flex space-x-2 mt-4">
+                  <div className="h-8 bg-gray-300 rounded w-1/3" />
+                  <div className="h-8 bg-gray-300 rounded w-1/3" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
