@@ -25,6 +25,8 @@ export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [availability, setAvailability] = useState("all");
 
   useEffect(() => {
   setLoading(true)
@@ -92,9 +94,13 @@ export default function EquipmentPage() {
     )
   }
 
-  const filteredEquipment = equipment.filter(item =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredEquipment = equipment.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = category === "all" || item.category.toLowerCase() === category;
+    const matchesAvailability = availability === "all" || item.availability.toLowerCase() === availability;
+    return matchesSearch && matchesCategory && matchesAvailability;
+  });
+
   console.log("🔍 Filtering equipment by search term:", search)
 
   return (
@@ -113,7 +119,7 @@ export default function EquipmentPage() {
         </div>
         <div>
           <Label htmlFor="category">Filter by Category</Label>
-          <Select>
+          <Select value={category} onValueChange={setCategory}>
             <SelectTrigger id="category">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
@@ -129,7 +135,7 @@ export default function EquipmentPage() {
         </div>
         <div>
           <Label htmlFor="availability">Filter by Availability</Label>
-          <Select>
+          <Select value={availability} onValueChange={setAvailability}>
             <SelectTrigger id="availability">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
