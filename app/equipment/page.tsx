@@ -24,6 +24,7 @@ type EquipmentItem = {
 export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
   setLoading(true)
@@ -91,6 +92,11 @@ export default function EquipmentPage() {
     )
   }
 
+  const filteredEquipment = equipment.filter(item =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+  console.log("🔍 Filtering equipment by search term:", search)
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">Equipment Catalog</h1>
@@ -98,7 +104,12 @@ export default function EquipmentPage() {
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <div>
           <Label htmlFor="search">Search Equipment</Label>
-          <Input id="search" placeholder="Search by name..." />
+          <Input
+            id="search"
+            placeholder="Search by name..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="category">Filter by Category</Label>
@@ -133,7 +144,7 @@ export default function EquipmentPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {equipment.map((item) => (
+        {filteredEquipment.map((item) => (
           <Card key={item.id} className="overflow-hidden">
             <div className="aspect-video w-full">
               <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
