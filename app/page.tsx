@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-4xl">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="flex flex-col items-center justify-between">
-              <CardHeader className="text-center">
+              <CardHeader className="flex-col items-center text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 mb-2">
                   <Database className="h-10 w-10 text-gray-600" />
                 </div>
@@ -32,7 +32,7 @@ export default function HomePage() {
               </CardFooter>
             </Card>
             <Card className="flex flex-col items-center justify-between">
-              <CardHeader className="text-center">
+              <CardHeader className="flex-col items-center text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 mb-2">
                   <CalendarDays className="h-10 w-10 text-gray-600" />
                 </div>
@@ -46,7 +46,7 @@ export default function HomePage() {
               </CardFooter>
             </Card>
             <Card className="flex flex-col items-center justify-between">
-              <CardHeader className="text-center">
+              <CardHeader className="flex-col items-center text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 mb-2">
                   <ClipboardList className="h-10 w-10 text-gray-600" />
                 </div>
@@ -60,7 +60,7 @@ export default function HomePage() {
               </CardFooter>
             </Card>
             <Card className="flex flex-col items-center justify-between">
-              <CardHeader className="text-center">
+              <CardHeader className="flex-col items-center text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 mb-2">
                   <Users className="h-10 w-10 text-gray-600" />
                 </div>

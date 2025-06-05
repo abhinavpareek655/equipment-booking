@@ -58,8 +58,10 @@ export function UserNav() {
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    <Button variant="outline" onClick={() => setIsLoggedIn(true)}>
-      Log In
-    </Button>
+    <Link href="/login">
+      <Button variant="outline">
+        Log In
+      </Button>
+    </Link>
   )
 }
