@@ -164,80 +164,82 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    // Validate the form first
-    const formErrors = validateForm();
-    setErrors(formErrors);
+  const formErrors = validateForm();
+  setErrors(formErrors);
 
-    if (Object.keys(formErrors).length === 0) {
-      console.log("📦 Posting to /api/auth/register with payload:", form);
+  if (Object.keys(formErrors).length === 0) {
+    console.log("📦 Posting to /api/auth/register with payload:", form);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          role: form.role,               // ✅ add this
+          department: form.department,   // ✅ add this
+        }),
+      });
+
+      const rawText = await response.text();
+      let parsedData;
 
       try {
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        });
-
-        console.log("🔁 Response status:", response.status);
-
-        const rawText = await response.text();
-        console.log("📄 Raw response:", rawText);
-
-        let parsedData;
-        try {
-          parsedData = JSON.parse(rawText);
-          console.log("✅ Parsed JSON:", parsedData);
-        } catch (parseErr) {
-          console.error("⚠️ JSON parse error:", parseErr);
-        }
-
-        if (!response.ok) {
-          throw new Error(`❌ HTTP error! status: ${response.status}`);
-        }
-
-        toast({
-          title: "Registration Successful!",
-          description: "Your account has been created successfully.",
-        });
-
-        setForm(initialState);
-        setTouchedFields(new Set());
-        setErrors({});
-
-        setTimeout(() => {
-          router.push("/verify");
-        });
-      } catch (error) {
-        console.error("🚨 Registration error:", error);
-        toast({
-          title: "Registration Failed",
-          description:
-            "An error occurred while creating your account. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsSubmitting(false);
+        parsedData = JSON.parse(rawText);
+        console.log("✅ Parsed JSON:", parsedData);
+      } catch (parseErr) {
+        console.error("⚠️ JSON parse error:", parseErr);
       }
-    } else {
-      console.log("⚠️ Validation errors:", formErrors);
+
+      if (!response.ok) {
+        throw new Error(`❌ HTTP error! status: ${response.status}`);
+      }
+
       toast({
-        title: "Validation Errors",
-        description: "Please fix the errors in the form before submitting.",
+        title: "Registration Successful!",
+        description: "Your account has been created successfully.",
+      });
+
+      setForm(initialState);
+      setTouchedFields(new Set());
+      setErrors({});
+
+      setTimeout(() => {
+        router.push(`/verify?email=${encodeURIComponent(form.email)}`);
+      });
+    } catch (error) {
+      console.error("🚨 Registration error:", error);
+      toast({
+        title: "Registration Failed",
+        description: "An error occurred while creating your account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
-  };
+  } else {
+    console.log("⚠️ Validation errors:", formErrors);
+    toast({
+      title: "Validation Errors",
+      description: "Please fix the errors in the form before submitting.",
+      variant: "destructive",
+    });
+    setIsSubmitting(false);
+  }
+};
+
 
   const passwordStrength = getPasswordStrength()
   const completionPercentage = getCompletionPercentage()
   const isFormValid = Object.keys(validateForm()).length === 0
 
   return (
-    <div className="container flex justify-center py-8">
+    <div className="container flex justify-center mt-8">
       <Card className="mx-auto max-w-lg w-full">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>

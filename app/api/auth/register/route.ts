@@ -7,40 +7,36 @@ import User from "@/models/User";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 
-// We won’t rely on TypeScript’s destructuring‐with‐type annotation here, 
-// because `req.json()` can return anything. Instead, read it into a plain object:
 type RegisterRequest = {
   name?: string;
   email?: string;
   password?: string;
+  role?: string;
+  department?: string;
 };
 
 export async function POST(request: Request) {
-  // 1) Connect to MongoDB
   await dbConnect();
 
-  // 2) Safely parse JSON
   let body: RegisterRequest;
   try {
     body = (await request.json()) as RegisterRequest;
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { success: false, message: "Invalid JSON payload" },
       { status: 400 }
     );
   }
 
-  const { name, email, password } = body;
+  const { name, email, password, role, department } = body;
 
-  // 3) Basic field validation
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !role || !department) {
     return NextResponse.json(
-      { success: false, message: "Name, email, and password are required." },
+      { success: false, message: "Name, email, password, role, and department are required." },
       { status: 400 }
     );
   }
 
-  // 4) Check if this email is already registered
   try {
     const existingUser = await User.findOne({ email }).lean();
     if (existingUser) {
@@ -57,9 +53,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // 5) Generate a 6‐digit OTP and hash it
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // valid for 10 minutes
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   let codeHash: string;
   let passwordHash: string;
@@ -74,7 +69,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // 6) Upsert into VerificationCode collection:
   try {
     await VerificationCode.findOneAndUpdate(
       { email },
@@ -83,6 +77,8 @@ export async function POST(request: Request) {
         codeHash,
         name,
         passwordHash,
+        role,
+        department,
         expiresAt,
       },
       { upsert: true, new: true }
@@ -112,23 +108,41 @@ export async function POST(request: Request) {
       to: email,
       subject: "OTP for Account Verification",
       html: `
-        <div style="background:#f4f4f4; padding:30px; font-family:Arial,sans-serif;">
-          <div style="max-width:480px; margin:auto; background:#fff; padding:30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-            <div style="text-align:center;">
-              <h2 style="color:#222; font-size:22px; margin-bottom:10px;">Verify Your Email</h2>
-              <p style="color:#555; font-size:16px;">Use this code to verify your account:</p>
-              <div style="margin:20px auto; font-size:32px; font-weight:bold; letter-spacing:4px; color:#666; background:#f0f8ff; padding:15px 25px; border-radius:8px; display:inline-block;">
-                ${code}
-              </div>
-              <p style="color:#777; font-size:14px; margin-top:30px;">This code expires in 10 minutes.</p>
+      <div style="background-color: #f4f4f4; padding: 40px 0; font-family: Arial, sans-serif;">
+        <div style="max-width: 520px; margin: auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);">
+          
+          <div style="text-align: center;">
+            <img src="cid:curaj-logo" alt="CURaj Logo" style="width: 100px; height: auto; margin-bottom: 16px;" />
+            <div style="font-size: 28px; font-weight: 700; color: #1DB954; margin-bottom: 10px;">DBT BUILDER</div>
+            <h2 style="color: #222; font-size: 20px; margin: 10px 0;">Verify Your Email</h2>
+            <p style="color: #555; font-size: 15px; line-height: 1.5; margin-bottom: 24px;">
+              Please use the code below to verify your email address. This helps us confirm your identity.
+            </p>
+
+            <div style="display: inline-block; font-size: 30px; font-weight: bold; letter-spacing: 6px; color: #1DB954; background-color: #f0f8ff; padding: 14px 28px; border-radius: 10px;">
+              ${code}
             </div>
-            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-            <div style="text-align:center; color:#aaa; font-size:12px;">
-              © ${new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
-            </div>
+
+            <p style="color: #777; font-size: 13px; margin-top: 30px; line-height: 1.5;">
+              This code is valid for 10 minutes. If you did not request this, you can safely ignore this email.
+            </p>
+          </div>
+
+          <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
+
+          <div style="text-align: center; font-size: 12px; color: #999;">
+            © ${new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
           </div>
         </div>
+      </div>
       `,
+      attachments: [
+      {
+        filename: "curaj-logo.png",
+        path: process.cwd() + "/public/images/curaj-logo.png",
+        cid: "curaj-logo" // same as in the img src above
+      }
+      ]
     });
   } catch (err) {
     console.error("[REGISTER] ✉️ Email send error:", err);

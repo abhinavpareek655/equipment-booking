@@ -86,35 +86,37 @@ export default function VerifyPage() {
 
   // Verify OTP
   const handleVerify = async (otpCode?: string) => {
-    const codeToVerify = otpCode || otp.join("")
-
+    const codeToVerify = otpCode ?? otp.join("");
     if (codeToVerify.length !== 6) {
-      setError("Please enter the complete 6-digit OTP")
-      return
+        setError("Please enter the complete 6-digit OTP");
+        return;
     }
 
-    setIsVerifying(true)
-    setError("")
+    setIsVerifying(true);
+    setError("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+        const response = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: codeToVerify }),
+        });
 
-      // Mock verification logic
-      if (codeToVerify === "123456") {
-        setSuccess(true)
+        if (!response.ok) {
+        const { message } = await response.json();
+        throw new Error(message || "OTP verification failed");
+        }
+
+        setSuccess(true);
         setTimeout(() => {
-          router.push("/")
-        }, 2000)
-      } else {
-        setError("Invalid OTP. Please check and try again.")
-      }
-    } catch (err) {
-      setError("Verification failed. Please try again.")
+        router.push("/login");
+        }, 2000);
+    } catch (err: any) {
+        setError(err.message || "Verification failed. Please try again.");
     } finally {
-      setIsVerifying(false)
+        setIsVerifying(false);
     }
-  }
+    };
 
   // Resend OTP
   const handleResend = async () => {
@@ -142,7 +144,7 @@ export default function VerifyPage() {
 
   if (success) {
     return (
-      <div className="container flex h-screen items-center justify-center">
+      <div className="container flex mt-8 justify-center">
         <Card className="mx-auto max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-8">
             <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
@@ -157,7 +159,7 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="container flex h-screen items-center justify-center">
+    <div className="container flex mt-8 justify-center">
       <Card className="mx-auto max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Verify Your Email</CardTitle>
@@ -182,7 +184,7 @@ export default function VerifyPage() {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="w-12 h-12 text-center text-lg font-semibold"
+                  className="w-12 h-12 text-center text-lg font-semibold border-gray-500"
                   disabled={isVerifying}
                 />
               ))}

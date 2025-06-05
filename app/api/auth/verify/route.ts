@@ -1,4 +1,5 @@
 // app/api/verify/route.ts
+
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import VerificationCode from "@/models/VerificationCode";
@@ -30,20 +31,40 @@ export async function POST(request: Request) {
       );
     }
 
-    if (Date.now() > record.expiresAt) {
-      return NextResponse.json({ message: "OTP has expired" }, { status: 400 });
+    if (Date.now() > record.expiresAt.getTime()) {
+      return NextResponse.json(
+        { message: "OTP has expired" },
+        { status: 400 }
+      );
     }
 
     const isValid = await bcrypt.compare(otp, record.codeHash);
     if (!isValid) {
-      return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid OTP" },
+        { status: 400 }
+      );
     }
 
-    // Create user using stored name & passwordHash
-    const { name, passwordHash } = record;
-    const newUser = await User.create({ name, email, password: passwordHash });
+    // Extract all required fields from the verification record
+    const { name, passwordHash, role, department } = record;
+    if (!name || !passwordHash || !role || !department) {
+      return NextResponse.json(
+        { message: "Missing user data in verification record" },
+        { status: 500 }
+      );
+    }
 
-    // Remove the verification record
+    // Create the new user
+    const newUser = await User.create({
+      name,
+      email,
+      passwordHash,
+      role,
+      department,
+    });
+
+    // Clean up the verification record
     await VerificationCode.deleteOne({ email });
 
     return NextResponse.json(
