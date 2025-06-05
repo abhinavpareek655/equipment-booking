@@ -27,7 +27,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container flex h-screen items-center justify-center">
+    <div className="container flex mt-8 justify-center">
       <Card className="mx-auto max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Sign in</CardTitle>

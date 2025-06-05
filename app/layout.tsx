@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { MainNav } from "@/components/main-nav"
 import { UserNav } from "@/components/user-nav"
 import Image from "next/image"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -83,6 +84,7 @@ export default function RootLayout({
             </footer>
           </div>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   )
