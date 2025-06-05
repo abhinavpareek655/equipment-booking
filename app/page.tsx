@@ -76,9 +76,9 @@ export default function HomePage() {
           </div>
         </div>
         <div className="mx-auto max-w-2xl mt-12 p-6 bg-gray-50 rounded-lg">
-          <h2 className="text-xl font-bold mb-4">About CURAJ EBS Project</h2>
+          <h2 className="text-xl font-bold mb-4">About DBT BUILDER Project</h2>
           <p className="text-gray-600">
-            The CURAJ EBS project provides advanced research equipment for faculty, researchers, and students at Central University of Rajasthan. This booking system ensures systematic, fair, and
+            The DBT BUILDER project provides advanced research equipment for faculty, researchers, and students at Central University of Rajasthan. This booking system ensures systematic, fair, and
             efficient use of this valuable research equipment.
           </p>
         </div>
