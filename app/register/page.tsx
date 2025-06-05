@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { AlertCircle, EyeOff, Eye } from "lucide-react"
+import { AlertCircle, EyeOff, Eye, CheckCircle} from "lucide-react"
 
 type FormState = {
   email: string
@@ -62,12 +62,6 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
-  const [email, setEmail] = useState("")
-  const [name, setName] = useState("")
-  const [department, setDepartment] = useState("")
-  const [role, setRole] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
 
   // add this ref for toggling password visibility
   const passwordInputRef = useRef<HTMLInputElement>(null)
@@ -169,46 +163,74 @@ export default function RegisterPage() {
     return totalFields === 0 ? 0 : Math.floor((completedFields / totalFields) * 100);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    const formErrors = validateForm()
-    setErrors(formErrors)
+    // Validate the form first
+    const formErrors = validateForm();
+    setErrors(formErrors);
 
     if (Object.keys(formErrors).length === 0) {
+      console.log("📦 Posting to /api/auth/register with payload:", form);
+
       try {
-        // API call
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+
+        console.log("🔁 Response status:", response.status);
+
+        const rawText = await response.text();
+        console.log("📄 Raw response:", rawText);
+
+        let parsedData;
+        try {
+          parsedData = JSON.parse(rawText);
+          console.log("✅ Parsed JSON:", parsedData);
+        } catch (parseErr) {
+          console.error("⚠️ JSON parse error:", parseErr);
+        }
+
+        if (!response.ok) {
+          throw new Error(`❌ HTTP error! status: ${response.status}`);
+        }
 
         toast({
           title: "Registration Successful!",
           description: "Your account has been created successfully.",
-        })
+        });
 
-        // Reset form and state
-        setForm(initialState)
-        setTouchedFields(new Set())
-        setErrors({})
-        setIsSubmitting(false)
-        router.push("/login")
+        setForm(initialState);
+        setTouchedFields(new Set());
+        setErrors({});
+
+        setTimeout(() => {
+          router.push("/verify");
+        });
       } catch (error) {
-        console.error("Registration error:", error)
+        console.error("🚨 Registration error:", error);
         toast({
           title: "Registration Failed",
-          description: "An error occurred while creating your account. Please try again.",
+          description:
+            "An error occurred while creating your account. Please try again.",
           variant: "destructive",
-        })
+        });
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
+      console.log("⚠️ Validation errors:", formErrors);
       toast({
         title: "Validation Errors",
         description: "Please fix the errors in the form before submitting.",
         variant: "destructive",
-      })
+      });
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false)
-  }
+  };
 
   const passwordStrength = getPasswordStrength()
   const completionPercentage = getCompletionPercentage()
@@ -435,9 +457,22 @@ export default function RegisterPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button type="submit" className="w-full">
-              Register
-            </Button>
+            <Button
+                  type="submit"
+                  className="w-full h-12 text-lg font-semibold"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Register
+                    </>
+                  )}
+                </Button>
             <p className="mt-4 text-center text-sm text-gray-500">
               Already have an account?{" "}
               <Link href="/login" className="text-primary hover:underline">
