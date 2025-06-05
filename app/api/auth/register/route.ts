@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
   // 5) Generate a 6‐digit OTP and hash it
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // valid for 10 minutes
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // valid for 10 minutes
 
   let codeHash: string;
   let passwordHash: string;
