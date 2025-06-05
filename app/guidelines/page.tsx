@@ -28,7 +28,7 @@ export default function GuidelinesPage() {
               <div>
                 <h3 className="text-lg font-medium mb-2">Purpose</h3>
                 <p>
-                  To ensure systematic, fair, and efficient use of research equipment procured under the CURAJ EBS
+                  To ensure systematic, fair, and efficient use of research equipment procured under the DBT BUILDER
                   project, this SOP provides a structured process for booking, usage, and maintenance, specifically for
                   research scholars.
                 </p>
@@ -38,7 +38,7 @@ export default function GuidelinesPage() {
                 <h3 className="text-lg font-medium mb-2">Scope</h3>
                 <p>
                   This SOP applies to all research scholars, faculty, and technical staff utilizing equipment funded by
-                  the CURAJ EBS project in the School of Life Sciences, Central University of Rajasthan.
+                  the DBT BUILDER project in the School of Life Sciences, Central University of Rajasthan.
                 </p>
               </div>
 

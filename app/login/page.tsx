@@ -32,7 +32,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
           <CardDescription>
-            Enter your university email to sign in to the CURAJ EBS equipment booking system
+            Enter your university email to sign in to the DBT BUILDER equipment booking system
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

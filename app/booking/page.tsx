@@ -313,7 +313,7 @@ export default function BookingPage() {
                     <ChevronLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                   <Button type="submit" disabled={isSubmitting || submissionStatus === "success"}>
-                    {isSubmitting ? "Submitting..." : "Submit Booking Request"}
+                    {isSubmitting ? "Submitting..." : "Submit"}
                   </Button>
                 </div>
               </form>
