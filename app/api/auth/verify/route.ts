@@ -5,6 +5,7 @@ import { dbConnect } from "@/lib/db";
 import VerificationCode from "@/models/VerificationCode";
 import User from "@/models/User";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 interface VerifyRequest {
   email: string;
@@ -40,13 +41,9 @@ export async function POST(request: Request) {
 
     const isValid = await bcrypt.compare(otp, record.codeHash);
     if (!isValid) {
-      return NextResponse.json(
-        { message: "Invalid OTP" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
     }
 
-    // Extract all required fields from the verification record
     const { name, passwordHash, role, department } = record;
     if (!name || !passwordHash || !role || !department) {
       return NextResponse.json(
@@ -67,10 +64,32 @@ export async function POST(request: Request) {
     // Clean up the verification record
     await VerificationCode.deleteOne({ email });
 
-    return NextResponse.json(
+    // Sign a JWT that includes userId and additional claims
+    const token = jwt.sign(
+      {
+        userId: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        department: newUser.department,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
+
+    // Send response with HTTP-only cookie
+    const response = NextResponse.json(
       { message: "Registration successful", userId: newUser._id },
       { status: 201 }
     );
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return response;
   } catch (error) {
     console.error("[VERIFY] Error:", error);
     return NextResponse.json(

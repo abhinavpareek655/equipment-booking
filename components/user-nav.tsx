@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,11 +12,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useState } from "react"
 import Link from "next/link"
+
+interface UserData {
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+}
 
 export function UserNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    // On mount, call /api/auth/me to check for a valid JWT
+    fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include", // include HTTP-only cookies
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Not authenticated");
+        return res.json();
+      })
+      .then((data: UserData) => {
+        setIsLoggedIn(true);
+        setUserData(data);
+      })
+      .catch(() => {
+        setIsLoggedIn(false);
+        setUserData(null);
+      });
+  }, []);
 
   return isLoggedIn ? (
     <DropdownMenu>
@@ -47,14 +75,19 @@ export function UserNav() {
             </Link>
           </DropdownMenuItem>
           {/* For admins/staff */}
-          <DropdownMenuItem>
-            <Link href="/admin/dashboard" className="w-full">
-              Admin Dashboard
-            </Link>
-          </DropdownMenuItem>
+          {userData !== null && userData.role === "admin" && (
+              <DropdownMenuItem>
+                <Link href="/admin/dashboard" className="w-full">
+                  Admin Dashboard
+                </Link>
+              </DropdownMenuItem>
+            )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => {
+              setIsLoggedIn(false);
+              setUserData(null);
+            }}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
