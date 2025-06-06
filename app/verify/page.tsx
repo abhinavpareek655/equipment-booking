@@ -88,35 +88,38 @@ export default function VerifyPage() {
   const handleVerify = async (otpCode?: string) => {
     const codeToVerify = otpCode ?? otp.join("");
     if (codeToVerify.length !== 6) {
-        setError("Please enter the complete 6-digit OTP");
-        return;
+      setError("Please enter the complete 6-digit OTP");
+      return;
     }
 
     setIsVerifying(true);
     setError("");
 
     try {
-        const response = await fetch("/api/auth/verify", {
+      const response = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp: codeToVerify }),
-        });
+      });
 
-        if (!response.ok) {
+      if (!response.ok) {
         const { message } = await response.json();
         throw new Error(message || "OTP verification failed");
-        }
+      }
 
-        setSuccess(true);
-        setTimeout(() => {
-        router.push("/login");
-        }, 2000);
+      console.log("Cookies after verify:", document.cookie);
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     } catch (err: any) {
-        setError(err.message || "Verification failed. Please try again.");
+      console.log("Verification error:", err);
+      setError(err.message || "Verification failed. Please try again.");
     } finally {
-        setIsVerifying(false);
+      setIsVerifying(false);
     }
-    };
+  };
 
   // Resend OTP
   const handleResend = async () => {
