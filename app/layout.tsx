@@ -9,17 +9,18 @@ import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+export const themeColor = "#ffffff";
+
 export const metadata = {
   title: "DBT BUILDER Equipment Booking System",
   description: "Equipment booking system for the School of Life Sciences, Central University of Rajasthan",
   generator: "v0.dev",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
-  themeColor: "#ffffff",
 }
 
 export default function RootLayout({
