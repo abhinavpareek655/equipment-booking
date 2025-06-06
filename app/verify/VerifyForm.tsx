@@ -18,10 +18,8 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle, RefreshCw } from "lucide-react"
 
-export default function VerifyForm() {
+export default function VerifyForm({ email }: { email: string }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get("email") || ""
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
