@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -32,6 +30,42 @@ export default function LoginPage() {
   const [form, setForm] = useState<FormState>(initialState)
   const passwordInputRef = useRef<HTMLInputElement>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
+
+  const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+    setForm(f => ({ ...f, email: e.target.value }))
+
+    if (touchedFields.has("email")) {
+      const error = validateField("email", e.target.value)
+      setErrors((prev) => ({
+        ...prev,
+        ["email"]: error || undefined,
+      }))
+    }
+  }
+
+  const onPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setForm(f => ({ ...f, password: e.target.value }))
+
+    if (touchedFields.has("password")) {
+      const error = validateField("password", e.target.value)
+      setErrors((prev) => ({
+        ...prev,
+        ["password"]: error || undefined,
+      }))
+    }
+  }
+
+  const handleBlur = (name: keyof FormState) => {
+    setTouchedFields((prev) => new Set(prev).add(name))
+    const error = validateField(name, form[name])
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error || undefined,
+    }))
+  }
 
   const validateField = (key: keyof FormState, value: string): string | null => {
     switch (key) {
@@ -59,7 +93,11 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    const validation = validateForm()
+    if (Object.keys(validation).length) {
+      setErrors(validation)
+      return
+    }
     // 1. basic university-email check
     if (!email.endsWith("@curaj.ac.in")) {
       setErrors({email : "Please use a valid university email address (@curaj.ac.in)"});
@@ -98,9 +136,6 @@ export default function LoginPage() {
     }
   };
 
-  // const formErrors = validateForm();
-  // setErrors(formErrors);
-
   return (
     <div className="container flex mt-8 justify-center">
       <Card className="mx-auto max-w-md">
@@ -119,7 +154,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@curaj.ac.in"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={onEmailChange}
+                onBlur={() => handleBlur("email")}
                 className={errors.email ? "border-red-500" : ""}
                 required
               />
@@ -146,7 +182,8 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 className={errors.password ? "border-red-500" : ""}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={onPasswordChange}
+                onBlur={() => handleBlur("password")}
                 required
               />
               <Button
@@ -176,6 +213,12 @@ export default function LoginPage() {
                   )}
                 </Button>
               </div>
+              {errors.password && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.password}
+                </p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">

@@ -205,7 +205,7 @@ export default function RegisterPage() {
         description: "Your account has been created successfully.",
       });
 
-      setForm(initialState);
+      // setForm(initialState);
       setTouchedFields(new Set());
       setErrors({});
 

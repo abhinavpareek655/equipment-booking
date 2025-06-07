@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { usePathname } from "next/navigation";
 
 interface UserData {
   name: string;
@@ -22,9 +23,11 @@ interface UserData {
 }
 
 export function UserNav() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null);
 
+  const pathname = usePathname();
   useEffect(() => {
     // On mount, call /api/auth/me to check for a valid JWT
     fetch("/api/auth/me", {
@@ -42,9 +45,15 @@ export function UserNav() {
       .catch(() => {
         setIsLoggedIn(false);
         setUserData(null);
+      })
+      .finally(() => {
+        setIsCheckingAuth(false);
       });
-  }, []);
+  }, [pathname]);
 
+  if (isCheckingAuth) {
+    return <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+  }
   return isLoggedIn ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -90,6 +99,10 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
+            // ask for confirmation
+            if (!window.confirm("Are you sure you want to log out?")) {
+              return;
+            }
             // Tell the server to clear the cookie
             await fetch("/api/auth/logout", {
               method: "POST",
