@@ -50,17 +50,21 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+            <AvatarImage src="/images/user.png" alt="User" />
             <AvatarFallback>US</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User</p>
-            <p className="text-xs leading-none text-muted-foreground">user@curaj.ac.in</p>
-          </div>
+            <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {userData?.name?.split(" ")[0] || "User"}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {userData?.email || "user@curaj.ac.in"}
+            </p>
+            </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -84,10 +88,20 @@ export function UserNav() {
             )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => {
-              setIsLoggedIn(false);
-              setUserData(null);
-            }}>Log out</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={async () => {
+            // Tell the server to clear the cookie
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+            });
+            // Then clear client state
+            setIsLoggedIn(false);
+            setUserData(null);
+          }}
+        >
+          Log out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
