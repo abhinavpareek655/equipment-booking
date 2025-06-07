@@ -88,7 +88,7 @@ export function UserNav() {
             </Link>
           </DropdownMenuItem>
           {/* For admins/staff */}
-          {userData !== null && userData.role === "admin" && (
+          {userData !== null && userData.role === "Admin" && (
               <DropdownMenuItem>
                 <Link href="/admin/dashboard" className="w-full">
                   Admin Dashboard

@@ -80,9 +80,9 @@ export function MainNav() {
           <Image
             src="/images/curaj-logo.png"
             alt="Central University of Rajasthan"
-            width={40}
-            height={40}
-            className="h-10 w-10 object-contain"
+            width={48}
+            height={48}
+            className="h-12 w-12 object-contain"
           />
           <Link href="/" className="flex items-center">
             <div>
@@ -102,16 +102,21 @@ export function MainNav() {
 
       <div className="hidden md:flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <Image src="/images/naac-logo.png" alt="NAAC A++" width={32} height={32} className="h-8 w-8 object-contain" />
+          <Image 
+            src="/images/naac-logo.png" 
+            alt="NAAC A++" 
+            width={68} 
+            height={68} 
+            className="h-17 w-17 object-contain" />
           <span className="text-xs font-medium text-muted-foreground">NAAC A++</span>
         </div>
         <div className="flex items-center gap-2">
           <Image
             src="/images/dbt-logo.png"
             alt="Department of Biotechnology"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
+            width={48}
+            height={48}
+            className="h-12 w-12 object-contain"
           />
           <span className="text-xs font-medium text-muted-foreground">DBT</span>
         </div>

@@ -34,7 +34,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light">
           <div className="flex min-h-screen flex-col">
             <header className="sticky top-0 z-40 w-full border-b bg-background">
-              <div className="container px-4 sm:px-6 lg:px-8 flex h-16 items-center">
+              <div className="container px-4 sm:px-6 lg:px-8 flex h-16 gap-2 items-center">
                 <MainNav />
                 <div className="flex items-center ml-4">
                   <UserNav />
