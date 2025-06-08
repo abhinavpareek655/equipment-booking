@@ -2,36 +2,64 @@ import { NextResponse } from 'next/server'
 import { dbConnect } from '@/lib/db'
 import Booking from '@/models/Booking'
 import Equipment from '@/models/Equipment'
-// import { getServerSession } from 'next-auth'
-// import { authOptions } from '@/lib/auth'
+import User from '@/models/User'
+import { Types } from 'mongoose'
 
-// GET /api/bookings - Get all bookings
+interface LeanBooking {
+  _id: Types.ObjectId
+  userEmail:   string
+  equipmentId: { name: string }
+  date:        string
+  startTime:   string
+  duration:    number
+  supervisor:  string
+  department:  string
+  purpose:     string
+  status:      'pending' | 'approved' | 'rejected'
+  createdAt:   Date
+}
+
 export async function GET(req: Request) {
-  console.log("GET /api/bookings called")
   await dbConnect()
-  console.log("Connected to database")
 
   try {
-    // const session = await getServerSession(authOptions)
-    // if (!session) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
-    // const email = session.user?.email
-    // const role = session.user?.role
-    // const filter = role === 'admin' ? {} : { userEmail: email }
-
-    const bookings = await Booking.find({})
-      .populate('equipmentId')
+    const raw = await Booking.find({})
+      .populate<{ equipmentId: { name: string } }>('equipmentId', 'name')
       .sort({ date: -1 })
+      .lean<LeanBooking[]>() 
 
-    console.log("Fetched bookings:", bookings.length)
-    return NextResponse.json(bookings)
+    const bookings = raw as LeanBooking[]
+
+    const enriched = await Promise.all(
+      bookings.map(async (b) => {
+        const user = await User
+          .findOne({ email: b.userEmail }, 'name')
+          .lean<{ name: string }>()
+
+        return {
+          id:         b._id,
+          date:       b.date,
+          startTime:  b.startTime,
+          duration:   b.duration,
+          supervisor: b.supervisor,
+          department: b.department,
+          purpose:    b.purpose,
+          status:     b.status,
+          createdAt:  b.createdAt,
+          userEmail:  b.userEmail,
+          equipment:  b.equipmentId.name,
+          userName:   user?.name ?? 'Unknown'
+        }
+      })
+    )
+
+    return NextResponse.json(enriched)
   } catch (err: any) {
-    console.error("GET error:", err)
+    console.error(err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
 
 // POST /api/bookings - Create a new booking request
 export async function POST(req: Request) {
@@ -40,15 +68,11 @@ export async function POST(req: Request) {
   console.log("Connected to database")
 
   try {
-    // const session = await getServerSession(authOptions)
-    // if (!session) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
     const data = await req.json()
     console.log("Request body received:", data)
 
     const {
+      userEmail, 
       equipmentId,
       date,
       startTime,
@@ -70,7 +94,7 @@ export async function POST(req: Request) {
     }
 
     const booking = await Booking.create({
-      userEmail: "test@curaj.ac.in",
+      userEmail,
       equipmentId,
       date,
       startTime,

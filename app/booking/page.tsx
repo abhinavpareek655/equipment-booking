@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useForm, FormProvider } from "react-hook-form"
 import { isToday } from "date-fns"
+import Cookies from 'js-cookie'
+import jwt from 'jsonwebtoken'
 
 // const equipment = [
 //   { id: "1", name: "Flow Cytometer", category: "Cell Analysis" },
@@ -36,7 +38,7 @@ export default function BookingPage() {
   const { toast } = useToast()
 
   const [equipmentList, setEquipmentList] = useState<any[]>([])
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | null>(new Date())
   const [startTime, setStartTime] = useState<string>("09:00")
   const [duration, setDuration] = useState<number>(1)
   const [selectedEquipment, setSelectedEquipment] = useState(equipmentId || "")
@@ -69,34 +71,53 @@ export default function BookingPage() {
   const endTime = calculateEndTime()
 
   const handleSubmit = async (e: React.FormEvent) => {
-   e.preventDefault()
-   setIsSubmitting(true)
-   try {
-     const body = {
-       equipmentId: selectedEquipment,
-       date: format(date!, "yyyy-MM-dd"),
-       startTime,
-       duration,
-       ...formMethods.getValues(), // supervisor, department, purpose
-     }
-     const res = await fetch("/api/booking", {
-       method: "POST",
-       headers: { "Content-Type": "application/json" },
-       body: JSON.stringify(body),
-     })
-     if (!res.ok) throw new Error(await res.text())
-     setSubmissionStatus("success")
-     toast({
-       title: "Booking Request Submitted",
-       description: "Your request has been sent to the instrument administrators for approval.",
-     })
-   } catch (err: any) {
-     setSubmissionStatus("error")
-     toast({ title: "Error", description: err.message || "Booking failed" })
-   } finally {
-     setIsSubmitting(false)
-   }
-}
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      // 1. get your real user email from /api/auth/me
+      const me = await fetch("/api/auth/me", {
+        credentials: "include",
+      })
+      if (!me.ok) throw new Error("Not authenticated")
+      const { email: userEmail } = await me.json()
+
+      // 2. grab only the booking‐specific fields from your form
+      const { supervisor, department, purpose } =
+        formMethods.getValues()
+
+      const body = {
+        userEmail,
+        equipmentId: selectedEquipment,
+        date:        format(date!, "yyyy-MM-dd"),
+        startTime,
+        duration,
+        supervisor,
+        department,
+        purpose,
+      }
+
+      // 3. POST your booking
+      const res = await fetch("/api/booking", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(body),
+      })
+
+      if (!res.ok) throw new Error(await res.text())
+      setSubmissionStatus("success")
+      toast({
+        title:       "Booking Request Submitted",
+        description: "Your request has been sent to the instrument administrators for approval.",
+      })
+    } catch (err: any) {
+      setSubmissionStatus("error")
+      toast({ title: "Error", description: err.message || "Booking failed" })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -178,7 +199,12 @@ export default function BookingPage() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus fromDate={new Date()}/>
+                        <Calendar
+                          selected={date}
+                          onChange={setDate}
+                          minDate={new Date()}
+                          placeholderText="Select a date"
+                        />
                       </PopoverContent>
                     </Popover>
                   </div>

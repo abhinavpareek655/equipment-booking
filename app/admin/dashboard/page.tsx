@@ -24,6 +24,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Calendar } from "@/components/ui/calendar"
+import UserSchema from "@/models/User"
+
 
 // Define TypeScript interfaces for our data
 interface UserHistory {
@@ -73,7 +75,7 @@ interface Instrument {
 export default function AdminDashboardPage() {
   const [tab, setTab] = useState("pending")
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [approvalDate, setApprovalDate] = useState<Date | undefined>(new Date())
+  const [approvalDate, setApprovalDate] = useState<Date | null>(new Date())
   const [approvalStartTime, setApprovalStartTime] = useState<string>("")
   const [approvalDuration, setApprovalDuration] = useState<number>(1)
   const [rejectionReason, setRejectionReason] = useState<string>("")
@@ -85,7 +87,10 @@ export default function AdminDashboardPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([])
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    setLoading(true);
     Promise.all([
       fetch("/api/booking").then(res => res.json()),
       fetch("/api/equipment").then(res => res.json())
@@ -165,7 +170,8 @@ export default function AdminDashboardPage() {
       })
       .catch(err =>
         console.error("Failed to fetch bookings or equipment:", err)
-      );
+      )
+      .finally(() => setLoading(false));
     }, []);
 
 
@@ -294,11 +300,38 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xl">pending Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{filteredpendingBookings.length}</div>
+            {loading ? (
+              <div
+                className="
+                  w-5 h-5
+                  border-2 border-gray-200
+                  border-t-2 border-t-blue-600
+                  rounded-full
+                  animate-spin
+                  mr-2
+                "
+              />
+            ) : (
+              <div className="text-3xl font-bold mr-2">
+                {filteredpendingBookings.length}
+              </div>
+            )}
             <p className="text-sm text-gray-500">Requests awaiting approval</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" size="sm" className="w-full" onClick={() => setTab("pending")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                setTab("pending");
+                // Scroll to the Booking Requests card
+                const card = document.getElementById("booking-requests-card");
+                if (card) {
+                  card.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+            >
               Review All
             </Button>
           </CardFooter>
@@ -309,11 +342,43 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xl">Today's Bookings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">5</div>
+            {loading ? (
+              <div
+                className="
+                  w-5 h-5
+                  border-2 border-gray-200
+                  border-t-2 border-t-blue-600
+                  rounded-full
+                  animate-spin
+                  mr-2
+                "
+              />
+            ) : (
+            <div className="text-3xl font-bold">
+              {
+                allBookings.filter(
+                  (b) =>
+                    new Date(b.date).toDateString() === new Date().toDateString()
+                ).length
+              }
+            </div>
+            )}
             <p className="text-sm text-gray-500">Scheduled for today</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                setTab("all");
+                // Scroll to the Booking Requests card
+                const card = document.getElementById("booking-requests-card");
+                if (card) {
+                  card.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+            >
               View Schedule
             </Button>
           </CardFooter>
@@ -337,7 +402,7 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Card>
+          <Card id="booking-requests-card">
             <CardHeader>
               <CardTitle>Booking Requests</CardTitle>
               <CardDescription>Manage equipment booking requests</CardDescription>
@@ -354,7 +419,11 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center space-x-2">
                       <FilterIcon className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-500">Filter by:</span>
-                      <Select defaultValue="all" value={filterInstrument} onValueChange={setFilterInstrument}>
+                      <Select
+                        defaultValue="all"
+                        value={filterInstrument}
+                        onValueChange={setFilterInstrument}
+                      >
                         <SelectTrigger className="h-8 w-[180px]">
                           <SelectValue placeholder="Equipment" />
                         </SelectTrigger>
@@ -370,7 +439,58 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {filteredpendingBookings.length === 0 ? (
+                  {loading ? (
+                    // Skeleton loaders
+                    [1, 2, 3, 4].map((i) => (
+                      <Card key={i} className="overflow-hidden">
+                        {/* Header skeleton */}
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-start">
+                            <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse" />
+                            <div className="h-4 bg-gray-200 rounded w-12 animate-pulse" />
+                          </div>
+                        </CardHeader>
+
+                        {/* Content skeleton */}
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-4 w-4 bg-gray-200 rounded-full animate-pulse" />
+                              <div className="space-y-1">
+                                <div className="h-3 bg-gray-200 rounded w-16 animate-pulse" />
+                                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="h-3 bg-gray-200 rounded w-12 animate-pulse" />
+                              <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="h-3 bg-gray-200 rounded w-12 animate-pulse" />
+                              <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-4 w-4 bg-gray-200 rounded-full animate-pulse" />
+                              <div className="space-y-1">
+                                <div className="h-3 bg-gray-200 rounded w-16 animate-pulse" />
+                                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-16 animate-pulse" />
+                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+                          </div>
+                        </CardContent>
+
+                        {/* Footer skeleton */}
+                        <CardFooter className="flex justify-end gap-2">
+                          <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
+                          <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
+                        </CardFooter>
+                      </Card>
+                    ))
+                  ) : filteredpendingBookings.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       No pending requests for your assigned instruments
                     </div>
@@ -417,7 +537,6 @@ export default function AdminDashboardPage() {
                             <Label className="text-xs text-gray-500">Purpose</Label>
                             <p className="text-sm">{booking.purpose}</p>
                           </div>
-
                           <div className="mt-3 flex items-center">
                             <History className="h-4 w-4 text-gray-500 mr-1" />
                             <Label className="text-xs text-gray-500">User History:</Label>
@@ -450,7 +569,6 @@ export default function AdminDashboardPage() {
                     ))
                   )}
                 </TabsContent>
-
                 <TabsContent value="all" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -611,7 +729,12 @@ export default function AdminDashboardPage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={approvalDate} onSelect={setApprovalDate} initialFocus />
+                    <Calendar
+                      selected={approvalDate}
+                      onChange={setApprovalDate}
+                      minDate={new Date()}
+                      placeholderText="Select a date"
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
