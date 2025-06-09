@@ -24,8 +24,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Calendar } from "@/components/ui/calendar"
-import UserSchema from "@/models/User"
-
 
 // Define TypeScript interfaces for our data
 interface UserHistory {
@@ -90,90 +88,57 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true)
     Promise.all([
-      fetch("/api/booking").then(res => res.json()),
-      fetch("/api/equipment").then(res => res.json())
+      fetch("/api/booking").then((res) => res.json()),
+      fetch("/api/equipment").then((res) => res.json()),
     ])
-      .then(([bookings, equipmentList]) => {
-        const equipmentMap = new Map<string, EquipmentInfo>(
-          equipmentList.map((eq: any) => [
-            eq._id,
-            {
-              id: eq._id,
-              name: eq.name,
-              location: eq.location,
-              category: eq.category,
-              totalHours: eq.totalHours ?? 0,
-              maintenanceHours: eq.maintenanceHours ?? 0,
-              uptime: eq.uptime ?? "--"
-            }
-          ])
-        );
+      .then(([bookings, equipmentList]: [any[], any[]]) => {
+        // 1. Map bookings directly—no more equipmentId lookup
+        const mapped = bookings.map((b) => {
+        const [startHour] = b.startTime.split(":").map(Number)
+        const endHour = startHour + b.duration
 
-        const mapped = bookings.map((b: any) => {
-          // handle populated vs. unpopulated equipmentId
-          const equipmentIdStr =
-            typeof b.equipmentId === "object"
-              ? b.equipmentId._id
-              : b.equipmentId;
-          const equipmentInfo = equipmentMap.get(equipmentIdStr) || {
-            id: "",
-            name: "Unknown",
-            location: "",
-            category: "",
-            totalHours: 0,
-            maintenanceHours: 0,
-            uptime: "--"
-          };
-
-          const startHour = parseInt(b.startTime.split(":")[0], 10);
-          const endHour = startHour + b.duration;
-
-          return {
-            id: b._id,
-            user: b.userEmail
-              .split("@")[0]
-              .replace(".", " ")
-              .replace(/\b\w/g, (l: string) => l.toUpperCase()),
-            userEmail: b.userEmail,
-            department: b.department,
-            supervisor: b.supervisor,
-            equipment: equipmentInfo.name,
-            equipmentId: equipmentIdStr,
-            date: b.date,
-            timeSlot: `${b.startTime} - ${endHour
-              .toString()
-              .padStart(2, "0")}:00`,
-            duration: b.duration,
-            purpose: b.purpose,
-            status: b.status ?? "pending",
-            userHistory: []
-          };
-        });
-
-        setAllBookings(mapped);
-        setpendingBookings(
-          mapped.filter((b: Booking) => (b.status ?? "").toLowerCase() === "pending")
-        );
-        setEquipmentStats(
-          equipmentList.map((eq: any) => ({
-            id: eq._id.toString(),
-            name: eq.name,
-            location: eq.location,
-            category: eq.category,
-            totalHours: eq.totalHours ?? 0,
-            maintenanceHours: eq.maintenanceHours ?? 0,
-            uptime: eq.uptime ?? "--"
-          }))
-        );
+        return {
+          id:           b.id,
+          user:         b.userName,
+          userEmail:    b.userEmail,
+          department:   b.department,
+          supervisor:   b.supervisor,
+          equipment:    b.equipment,
+          equipmentId:  b.equipmentId ?? "",      // <-- Add this line!
+          date:         b.date,
+          timeSlot:     `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
+          duration:     b.duration,
+          purpose:      b.purpose,
+          status:       b.status,
+          userHistory:  [],
+        }
       })
-      .catch(err =>
+
+
+        // 2. Split into pending vs. all
+        setAllBookings(mapped)
+        setpendingBookings(mapped.filter((b) => b.status === "pending"))
+
+        // 3. Equipment stats unchanged
+        setEquipmentStats(
+          equipmentList.map((eq) => ({
+            id:               eq._id.toString(),
+            name:             eq.name,
+            location:         eq.location,
+            category:         eq.category,
+            totalHours:       eq.totalHours ?? 0,
+            maintenanceHours: eq.maintenanceHours ?? 0,
+            uptime:           eq.uptime ?? "--",
+          }))
+        )
+      })
+      .catch((err) =>
         console.error("Failed to fetch bookings or equipment:", err)
       )
-      .finally(() => setLoading(false));
-    }, []);
-
+      .finally(() => setLoading(false))
+  }, [])
 
   // Filter bookings based on assigned instruments
   const filteredpendingBookings = pendingBookings.filter(
@@ -414,7 +379,7 @@ export default function AdminDashboardPage() {
                   <TabsTrigger value="all">All Bookings</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="pending" className="space-y-4">
+                <TabsContent key="pending" value="pending" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <FilterIcon className="h-4 w-4 text-gray-500" />
@@ -513,6 +478,7 @@ export default function AdminDashboardPage() {
                               <div>
                                 <Label className="text-xs text-gray-500">Requested by</Label>
                                 <p className="text-sm">{booking.user}</p>
+                                <p className="text-xs text-gray-500">{booking.userEmail}</p>
                               </div>
                             </div>
                             <div>
@@ -569,7 +535,7 @@ export default function AdminDashboardPage() {
                     ))
                   )}
                 </TabsContent>
-                <TabsContent value="all" className="space-y-4">
+                <TabsContent key="all" value="all" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <FilterIcon className="h-4 w-4 text-gray-500" />
