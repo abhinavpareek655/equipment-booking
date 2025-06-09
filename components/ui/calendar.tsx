@@ -1,3 +1,4 @@
+// components/ui/calendar.tsx
 "use client"
 
 import React from "react"
@@ -15,6 +16,7 @@ type CalendarProps = {
   placeholderText?: string
   minDate?: Date
   maxDate?: Date
+  excludeDates?: Date[]            // ← NEW
 }
 
 export function Calendar({
@@ -24,6 +26,7 @@ export function Calendar({
   placeholderText = "Select date",
   minDate,
   maxDate,
+  excludeDates,                    // ← NEW
 }: CalendarProps) {
   return (
     <div className={cn("relative", className)}>
@@ -33,6 +36,7 @@ export function Calendar({
         placeholderText={placeholderText}
         minDate={minDate}
         maxDate={maxDate}
+        excludeDates={excludeDates}  // ← FORWARDED
         className={cn(
           "w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary",
           className

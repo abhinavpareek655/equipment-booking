@@ -1,10 +1,10 @@
 import VerifyForm from "./VerifyForm"
 
-export default function VerifyPage({
-  searchParams,
+export default async function VerifyPage({
+  searchParams
 }: {
-  searchParams: { email?: string }
+  searchParams: Promise<{ email?: string }>
 }) {
-  const email = searchParams.email || ""
+  const { email = "" } = await searchParams
   return <VerifyForm email={email} />
 }

@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Calendar } from "@/components/ui/calendar"
+import { isSameDay, isToday, parse } from "date-fns";
 
 // Define TypeScript interfaces for our data
 interface UserHistory {
@@ -84,20 +85,20 @@ export default function AdminDashboardPage() {
   const [pendingBookings, setpendingBookings] = useState<Booking[]>([])
   const [allBookings, setAllBookings] = useState<Booking[]>([])
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
+  const [bookedSlotsByDate, setBookedSlotsByDate] = useState<{ [equipmentId: string]: { [date: string]: string[] } }>({});
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true)
-    Promise.all([
-      fetch("/api/booking").then((res) => res.json()),
-      fetch("/api/equipment").then((res) => res.json()),
-    ])
-      .then(([bookings, equipmentList]: [any[], any[]]) => {
-        // 1. Map bookings directly—no more equipmentId lookup
-        const mapped = bookings.map((b) => {
-        const [startHour] = b.startTime.split(":").map(Number)
-        const endHour = startHour + b.duration
+  setLoading(true);
+  Promise.all([
+    fetch("/api/booking").then((res) => res.json()),
+    fetch("/api/equipment").then((res) => res.json()),
+  ])
+    .then(([bookings, equipmentList]: [any[], any[]]) => {
+      const mapped = bookings.map((b) => {
+        const [startHour] = b.startTime.split(":").map(Number);
+        const endHour = startHour + b.duration;
 
         return {
           id:           b.id,
@@ -106,39 +107,45 @@ export default function AdminDashboardPage() {
           department:   b.department,
           supervisor:   b.supervisor,
           equipment:    b.equipment,
-          equipmentId:  b.equipmentId ?? "",      // <-- Add this line!
+          equipmentId:  b.equipmentId ?? "",
           date:         b.date,
+          startTime:    b.startTime, // Save raw startTime for later lookup
           timeSlot:     `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
           duration:     b.duration,
           purpose:      b.purpose,
           status:       b.status,
           userHistory:  [],
         }
-      })
+      });
 
+      setAllBookings(mapped);
+      setpendingBookings(mapped.filter((b) => b.status === "pending"));
 
-        // 2. Split into pending vs. all
-        setAllBookings(mapped)
-        setpendingBookings(mapped.filter((b) => b.status === "pending"))
+      // Collect all booked slots by equipmentId and date
+      const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
+      mapped.forEach((b) => {
+        if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
+        if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
+        slots[b.equipmentId][b.date].push(b.startTime);
+      });
+      setBookedSlotsByDate(slots);
 
-        // 3. Equipment stats unchanged
-        setEquipmentStats(
-          equipmentList.map((eq) => ({
-            id:               eq._id.toString(),
-            name:             eq.name,
-            location:         eq.location,
-            category:         eq.category,
-            totalHours:       eq.totalHours ?? 0,
-            maintenanceHours: eq.maintenanceHours ?? 0,
-            uptime:           eq.uptime ?? "--",
-          }))
-        )
-      })
-      .catch((err) =>
-        console.error("Failed to fetch bookings or equipment:", err)
-      )
-      .finally(() => setLoading(false))
-  }, [])
+      setEquipmentStats(
+        equipmentList.map((eq) => ({
+          id:               eq._id.toString(),
+          name:             eq.name,
+          location:         eq.location,
+          category:         eq.category,
+          totalHours:       eq.totalHours ?? 0,
+          maintenanceHours: eq.maintenanceHours ?? 0,
+          uptime:           eq.uptime ?? "--",
+        }))
+      );
+    })
+    .catch((err) => console.error("Failed to fetch bookings or equipment:", err))
+    .finally(() => setLoading(false));
+}, []);
+
 
   // Filter bookings based on assigned instruments
   const filteredpendingBookings = pendingBookings.filter(
@@ -253,6 +260,44 @@ export default function AdminDashboardPage() {
       setShowRejectionDialog(false);
     }
   };
+  const selectedEquipmentId = selectedBooking?.equipmentId ?? "";
+  // Get already booked slots for this equipment and date
+  const bookedSlots =
+    approvalDate
+      ? (bookedSlotsByDate[selectedEquipmentId]?.[format(approvalDate, "yyyy-MM-dd")] || [])
+      : [];
+
+  // Disable slots that are already booked or in the past (if today)
+  const now = new Date();
+  const isToday =
+    approvalDate &&
+    format(approvalDate, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
+
+  const disabledSlots = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"].filter((slot) => {
+    // Disable if already booked
+    if (bookedSlots.includes(slot)) return true;
+    // Disable if today and slot is before now
+    if (isToday) {
+      const [hour, minute] = slot.split(":").map(Number);
+      if (hour < now.getHours() || (hour === now.getHours() && minute <= now.getMinutes())) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  // Disable dates before today in the calendar
+  const isDateDisabled = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  const allSlots = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"];
+  const bookingsForEquip = bookedSlotsByDate[selectedEquipmentId] || {};
+  const fullyBookedDates = Object.entries(bookingsForEquip)
+  .filter(([_, slots]) => slots.length >= allSlots.length)
+  .map(([dateStr]) => new Date(dateStr));
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -699,6 +744,7 @@ export default function AdminDashboardPage() {
                       selected={approvalDate}
                       onChange={setApprovalDate}
                       minDate={new Date()}
+                      excludeDates={fullyBookedDates}
                       placeholderText="Select a date"
                     />
                   </PopoverContent>
@@ -708,20 +754,37 @@ export default function AdminDashboardPage() {
               <div>
                 <Label>Start Time</Label>
                 <Select value={approvalStartTime} onValueChange={setApprovalStartTime}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select start time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="09:00">09:00</SelectItem>
-                    <SelectItem value="10:00">10:00</SelectItem>
-                    <SelectItem value="11:00">11:00</SelectItem>
-                    <SelectItem value="12:00">12:00</SelectItem>
-                    <SelectItem value="13:00">13:00</SelectItem>
-                    <SelectItem value="14:00">14:00</SelectItem>
-                    <SelectItem value="15:00">15:00</SelectItem>
-                    <SelectItem value="16:00">16:00</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select start time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allSlots.map((slot) => {
+                    // build the slot’s DateTime
+                    const slotDateTime = parse(
+                      `${format(approvalDate || new Date(), "yyyy-MM-dd")} ${slot}`,
+                      "yyyy-MM-dd HH:mm",
+                      new Date()
+                    );
+
+                    // true if approvalDate is today AND the slot time has already passed
+                    const isApprovalDateToday =
+                      approvalDate != null &&
+                      isSameDay(approvalDate, new Date());
+
+                    const isPast = isApprovalDateToday && slotDateTime < new Date();
+
+                    return (
+                      <SelectItem
+                        key={slot}
+                        value={slot}
+                        disabled={disabledSlots.includes(slot) || isPast}
+                      >
+                        {slot}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
               </div>
 
               <div>
@@ -750,7 +813,17 @@ export default function AdminDashboardPage() {
             <Button variant="outline" onClick={() => setShowApprovalDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmApproval}>Approve Booking</Button>
+            <Button
+              onClick={confirmApproval}
+              disabled={
+              !approvalDate ||
+              !approvalStartTime ||
+              disabledSlots.includes(approvalStartTime) ||
+              isDateDisabled(approvalDate)
+              }
+            >
+              Approve Booking
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

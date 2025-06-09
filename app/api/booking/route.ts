@@ -87,10 +87,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const conflict = await Booking.findOne({ equipmentId, date, startTime })
+    const conflict = await Booking.findOne({ equipmentId, date, startTime });
     if (conflict) {
-      console.warn("Booking conflict found:", conflict)
-      return NextResponse.json({ error: 'Time slot already booked' }, { status: 409 })
+      console.warn("Booking conflict found, creating anyway:", conflict);
     }
 
     const booking = await Booking.create({

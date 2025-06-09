@@ -55,6 +55,7 @@ export async function POST(request: Request) {
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  console.log("[REGISTER] Generated OTP code:", code);
 
   let codeHash: string;
   let passwordHash: string;

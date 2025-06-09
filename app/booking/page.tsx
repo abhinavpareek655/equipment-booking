@@ -118,7 +118,6 @@ export default function BookingPage() {
     }
   }
 
-
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -284,9 +283,22 @@ export default function BookingPage() {
                   <Button variant="outline" onClick={() => setStep(1)}>
                     <ChevronLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
-                  <Button onClick={() => setStep(3)} disabled={!date || !startTime}>
+                    <Button
+                    onClick={() => setStep(3)}
+                    disabled={
+                      !date ||
+                      !startTime ||
+                      (() => {
+                      if (!date || !startTime) return true;
+                      const [hours, minutes] = startTime.split(":").map(Number);
+                      const selectedDateTime = new Date(date);
+                      selectedDateTime.setHours(hours, minutes, 0, 0);
+                      return selectedDateTime < new Date();
+                      })()
+                    }
+                    >
                     Continue <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                    </Button>
                 </div>
               </div>
             )}
