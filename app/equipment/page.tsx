@@ -67,33 +67,6 @@ export default function EquipmentPage() {
     .catch(() => setLoading(false))
 }, [])
 
-  if (loading) { 
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8">Equipment Catalog</h1>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="rounded-lg bg-gray-200 animate-pulse overflow-hidden"
-            >
-              <div className="aspect-video w-full bg-gray-300" />
-              <div className="p-4 space-y-3">
-                <div className="h-5 bg-gray-300 rounded w-2/3" />
-                <div className="h-4 bg-gray-300 rounded w-1/3" />
-                <div className="h-3 bg-gray-300 rounded w-1/2" />
-                <div className="flex space-x-2 mt-4">
-                  <div className="h-8 bg-gray-300 rounded w-1/3" />
-                  <div className="h-8 bg-gray-300 rounded w-1/3" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   const filteredEquipment = equipment.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "all" || item.category.toLowerCase() === category;
@@ -148,7 +121,31 @@ export default function EquipmentPage() {
           </Select>
         </div>
       </div>
-
+      {loading ? (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-lg bg-white border shadow overflow-hidden flex flex-col"
+          >
+            <div className="aspect-video w-full skeleton-shimmer" />
+            <div className="p-4 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <div className="h-6 rounded w-1/2 skeleton-shimmer" />
+                <div className="h-5 rounded w-20 skeleton-shimmer" />
+              </div>
+              <div className="h-4 rounded w-1/4 mb-3 skeleton-shimmer" />
+              <div className="h-4 rounded w-1/2 mb-4 skeleton-shimmer" />
+              <div className="flex-1" />
+              <div className="flex justify-between gap-2 mt-4">
+                <div className="h-9 rounded w-28 skeleton-shimmer" />
+                <div className="h-9 rounded w-28 skeleton-shimmer" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredEquipment.map((item) => (
           <Card key={item.id} className="overflow-hidden">
@@ -184,6 +181,7 @@ export default function EquipmentPage() {
           </Card>
         ))}
       </div>
+    )}
     </div>
   )
 }

@@ -86,6 +86,7 @@ export default function AdminDashboardPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([])
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
   const [bookedSlotsByDate, setBookedSlotsByDate] = useState<{ [equipmentId: string]: { [date: string]: string[] } }>({});
+  const [slotLoading, setSlotLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -173,8 +174,71 @@ export default function AdminDashboardPage() {
     setShowUserHistoryDialog(true)
   }
 
+  const fetchLatestBookingsAndEquipment = async () => {
+    setLoading(true);
+    try {
+      const [bookingsRes, equipmentRes] = await Promise.all([
+        fetch("/api/booking"),
+        fetch("/api/equipment"),
+      ]);
+      const bookings = await bookingsRes.json();
+      const equipmentList = await equipmentRes.json();
+
+      const mapped = bookings.map((b: any) => {
+        const [startHour] = b.startTime.split(":").map(Number);
+        const endHour = startHour + b.duration;
+
+        return {
+          id:           b.id,
+          user:         b.userName,
+          userEmail:    b.userEmail,
+          department:   b.department,
+          supervisor:   b.supervisor,
+          equipment:    b.equipment,
+          equipmentId:  b.equipmentId ?? "",
+          date:         b.date,
+          startTime:    b.startTime,
+          timeSlot:     `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
+          duration:     b.duration,
+          purpose:      b.purpose,
+          status:       b.status,
+          userHistory:  [],
+        }
+      });
+
+      setAllBookings(mapped);
+      setpendingBookings(mapped.filter((b: any) => b.status === "pending"));
+
+      // Collect all booked slots by equipmentId and date
+      const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
+      mapped.forEach((b: any) => {
+        if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
+        if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
+        slots[b.equipmentId][b.date].push(b.startTime);
+      });
+      setBookedSlotsByDate(slots);
+
+      setEquipmentStats(
+        equipmentList.map((eq: any) => ({
+          id:               eq._id.toString(),
+          name:             eq.name,
+          location:         eq.location,
+          category:         eq.category,
+          totalHours:       eq.totalHours ?? 0,
+          maintenanceHours: eq.maintenanceHours ?? 0,
+          uptime:           eq.uptime ?? "--",
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch bookings or equipment:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const confirmApproval = async () => {
     if (!selectedBooking) return;
+    setLoading(true);
     console.debug("🛠️ confirmApproval called for booking:", selectedBooking);
 
     try {
@@ -201,6 +265,8 @@ export default function AdminDashboardPage() {
       const updatedBooking = await res.json();
       console.debug("✅ Booking approved:", updatedBooking);
 
+      await fetchLatestBookingsAndEquipment();
+
       // update local state
       setpendingBookings(prev =>
         prev.filter(b => b.id !== selectedBooking.id)
@@ -212,6 +278,7 @@ export default function AdminDashboardPage() {
       );
     } catch (error) {
       console.error("❌ Error in confirmApproval:", error);
+      setLoading(false)
     } finally {
       setShowApprovalDialog(false);
     }
@@ -757,6 +824,13 @@ export default function AdminDashboardPage() {
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select start time" />
                 </SelectTrigger>
+                {loading ? (
+                  <div className="space-y-2 p-2">
+                    {allSlots.map((_, i) => (
+                      <div key={i} className="h-8 rounded bg-gray-200 animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
                 <SelectContent>
                   {allSlots.map((slot) => {
                     // build the slot’s DateTime
@@ -784,6 +858,7 @@ export default function AdminDashboardPage() {
                     )
                   })}
                 </SelectContent>
+                )}
               </Select>
               </div>
 

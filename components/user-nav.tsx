@@ -54,8 +54,13 @@ export function UserNav() {
   }, [pathname]);
 
   if (isCheckingAuth) {
-    return <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+    return (
+      <div className="h-8 w-8 mr-2">
+        <div className="h-8 w-8 skeleton-avatar" />
+      </div>
+    );
   }
+
   return isLoggedIn ? (
     <>
     {isDropdownOpen && (

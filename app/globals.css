@@ -92,3 +92,63 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb; /* Tailwind gray-200 */
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255,255,255,0.6) 40%,
+    rgba(255,255,255,0.8) 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton-avatar {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb; /* Tailwind gray-200 */
+  border-radius: 9999px;
+}
+.skeleton-avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255,255,255,0.5) 40%,
+    rgba(255,255,255,0.8) 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 1.2s infinite;
+}
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(.4,0,.6,1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
