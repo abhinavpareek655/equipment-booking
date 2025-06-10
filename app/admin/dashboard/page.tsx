@@ -328,20 +328,21 @@ export default function AdminDashboardPage() {
     }
   };
   const selectedEquipmentId = selectedBooking?.equipmentId ?? "";
-  // Get already booked slots for this equipment and date
+  // Get already booked slots for the selected equipment and date
   const bookedSlots =
-    approvalDate
+    approvalDate && selectedEquipmentId
       ? (bookedSlotsByDate[selectedEquipmentId]?.[format(approvalDate, "yyyy-MM-dd")] || [])
       : [];
 
-  // Disable slots that are already booked or in the past (if today)
+  // Only disable slots for the selected equipment that are already booked or in the past (if today)
   const now = new Date();
   const isToday =
     approvalDate &&
     format(approvalDate, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
 
-  const disabledSlots = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"].filter((slot) => {
-    // Disable if already booked
+  const allSlots = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"];
+  const disabledSlots = allSlots.filter((slot) => {
+    // Disable if already booked for this equipment
     if (bookedSlots.includes(slot)) return true;
     // Disable if today and slot is before now
     if (isToday) {
@@ -360,11 +361,20 @@ export default function AdminDashboardPage() {
     return date < today;
   };
 
-  const allSlots = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"];
+  // Only mark dates as fully booked if all slots for the selected equipment are booked
   const bookingsForEquip = bookedSlotsByDate[selectedEquipmentId] || {};
   const fullyBookedDates = Object.entries(bookingsForEquip)
-  .filter(([_, slots]) => slots.length >= allSlots.length)
-  .map(([dateStr]) => new Date(dateStr));
+    .filter(([_, slots]) => slots.length >= allSlots.length)
+    .map(([dateStr]) => new Date(dateStr));
+
+  // --- SHIMMER SKELETON UTILS ---
+  // Use skeleton-shimmer and skeleton-avatar from global CSS for shimmer effect
+  const Skeleton = ({ className = "", style = {}, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+    <div className={`skeleton-shimmer ${className}`} style={style} {...props} />
+  );
+  const SkeletonAvatar = ({ className = "", style = {}, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+    <div className={`skeleton-avatar ${className}`} style={style} {...props} />
+  );
 
   return (
     <div className="container mx-auto py-8 px-4">
