@@ -110,40 +110,32 @@ export async function POST(request: Request) {
       subject: "OTP for Account Verification",
       html: `
       <div style="background-color: #f4f4f4; padding: 40px 0; font-family: Arial, sans-serif;">
-        <div style="max-width: 520px; margin: auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);">
-          
-          <div style="text-align: center;">
-            <img src="cid:curaj-logo" alt="CURaj Logo" style="width: 100px; height: auto; margin-bottom: 16px;" />
-            <div style="font-size: 28px; font-weight: 700; color: #1DB954; margin-bottom: 10px;">DBT BUILDER</div>
-            <h2 style="color: #222; font-size: 20px; margin: 10px 0;">Verify Your Email</h2>
-            <p style="color: #555; font-size: 15px; line-height: 1.5; margin-bottom: 24px;">
-              Please use the code below to verify your email address. This helps us confirm your identity.
-            </p>
+      <div style="max-width: 520px; margin: auto; background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.1);">
+        
+        <div style="text-align: center;">
+        <div style="font-size: 28px; font-weight: 700; color: #1DB954; margin-bottom: 10px;">DBT BUILDER</div>
+        <h2 style="color: #222; font-size: 20px; margin: 10px 0;">Verify Your Email</h2>
+        <p style="color: #555; font-size: 15px; line-height: 1.5; margin-bottom: 24px;">
+          Please use the code below to verify your email address. This helps us confirm your identity.
+        </p>
 
-            <div style="display: inline-block; font-size: 30px; font-weight: bold; letter-spacing: 6px; color: #1DB954; background-color: #f0f8ff; padding: 14px 28px; border-radius: 10px;">
-              ${code}
-            </div>
+        <div style="display: inline-block; font-size: 30px; font-weight: bold; letter-spacing: 6px; color: #1DB954; background-color: #f0f8ff; padding: 14px 28px; border-radius: 10px;">
+          ${code}
+        </div>
 
-            <p style="color: #777; font-size: 13px; margin-top: 30px; line-height: 1.5;">
-              This code is valid for 10 minutes. If you did not request this, you can safely ignore this email.
-            </p>
-          </div>
+        <p style="color: #777; font-size: 13px; margin-top: 30px; line-height: 1.5;">
+          This code is valid for 10 minutes. If you did not request this, you can safely ignore this email.
+        </p>
+        </div>
 
-          <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
 
-          <div style="text-align: center; font-size: 12px; color: #999;">
-            © ${new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
-          </div>
+        <div style="text-align: center; font-size: 12px; color: #999;">
+        © ${new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
         </div>
       </div>
-      `,
-      attachments: [
-      {
-        filename: "curaj-logo.png",
-        path: process.cwd() + "/public/images/curaj-logo.png",
-        cid: "curaj-logo" // same as in the img src above
-      }
-      ]
+      </div>
+      `
     });
   } catch (err) {
     console.error("[REGISTER] ✉️ Email send error:", err);
