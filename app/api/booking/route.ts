@@ -47,8 +47,9 @@ export async function GET(req: Request) {
           status:     b.status,
           createdAt:  b.createdAt,
           userEmail:  b.userEmail,
-          equipment:  b.equipmentId.name,
-          userName:   user?.name ?? 'Unknown'
+          equipment:   b.equipmentId.name,
+          equipmentId: (b.equipmentId as any)._id?.toString() ?? '',
+          userName:    user?.name ?? 'Unknown'
         }
       })
     )
