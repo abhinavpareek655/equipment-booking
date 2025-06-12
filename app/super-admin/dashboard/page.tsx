@@ -26,12 +26,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Mock data for instruments
-const instruments = [
+// TypeScript interface matching the Equipment model
+interface Equipment {
+  id: number
+  name: string
+  department: string
+  category: string
+  location: string
+  status: string
+  description?: string
+  contact?: string
+  imageUrl?: string
+  totalHours?: number
+  maintenanceHours?: number
+  uptime?: string
+  admins: { id: number; name: string; email: string }[]
+}
+
+// Mock data for equipment
+const equipmentList: Equipment[] = [
   {
     id: 1,
     name: "Flow Cytometer",
-    model: "BD FACSCanto II",
+    department: "BD FACSCanto II",
     category: "Cell Analysis",
     location: "Lab 101",
     status: "Available",
@@ -43,7 +60,7 @@ const instruments = [
   {
     id: 2,
     name: "Confocal Microscope",
-    model: "Zeiss LSM 880",
+    department: "Zeiss LSM 880",
     category: "Microscopy",
     location: "Lab 102",
     status: "Maintenance",
@@ -52,7 +69,7 @@ const instruments = [
   {
     id: 3,
     name: "PCR Thermal Cycler",
-    model: "Bio-Rad CFX96",
+    department: "Bio-Rad CFX96",
     category: "Molecular Biology",
     location: "Lab 103",
     status: "Available",
@@ -64,7 +81,7 @@ const instruments = [
   {
     id: 4,
     name: "Ultra-centrifuge",
-    model: "Beckman Coulter Optima XPN",
+    department: "Beckman Coulter Optima XPN",
     category: "Separation",
     location: "Lab 104",
     status: "Available",
@@ -73,7 +90,7 @@ const instruments = [
   {
     id: 5,
     name: "Mass Spectrometer",
-    model: "Thermo Scientific Q Exactive",
+    department: "Thermo Scientific Q Exactive",
     category: "Analysis",
     location: "Lab 105",
     status: "Available",
@@ -82,7 +99,7 @@ const instruments = [
   {
     id: 6,
     name: "HPLC System",
-    model: "Agilent 1260 Infinity II",
+    department: "Agilent 1260 Infinity II",
     category: "Chromatography",
     location: "Lab 106",
     status: "Available",
@@ -106,60 +123,60 @@ const allPotentialAdmins = [
 ]
 
 export default function SuperAdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState("instruments")
+  const [activeTab, setActiveTab] = useState("equipment")
   const [searchTerm, setSearchTerm] = useState("")
-  const [showAddInstrumentDialog, setShowAddInstrumentDialog] = useState(false)
-  const [showEditInstrumentDialog, setShowEditInstrumentDialog] = useState(false)
+  const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false)
+  const [showEditEquipmentDialog, setShowEditEquipmentDialog] = useState(false)
   const [showAssignAdminsDialog, setShowAssignAdminsDialog] = useState(false)
-  const [selectedInstrument, setSelectedInstrument] = useState<any>(null)
+  const [selectedEquipment, setSelectedEquipment] = useState<any>(null)
   const [selectedAdmins, setSelectedAdmins] = useState<any[]>([])
   const [adminSearchOpen, setAdminSearchOpen] = useState(false)
 
-  // New instrument form state
-  const [newInstrument, setNewInstrument] = useState({
+  // New equipment form state
+  const [newEquipment, setNewEquipment] = useState({
     name: "",
-    model: "",
+    department: "",
     category: "",
     location: "",
     description: "",
   })
 
-  // Filter instruments based on search term
-  const filteredInstruments = instruments.filter(
-    (instrument) =>
-      instrument.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      instrument.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      instrument.category.toLowerCase().includes(searchTerm.toLowerCase()),
+  // Filter equipment based on search term
+  const filteredEquipment = equipmentList.filter(
+    (equipment) =>
+      equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      equipment.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      equipment.category.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleAddInstrument = () => {
+  const handleAddEquipment = () => {
     // In a real app, you would send this to your backend
-    console.log("Adding new instrument:", newInstrument)
-    setShowAddInstrumentDialog(false)
+    console.log("Adding new equipment:", newEquipment)
+    setShowAddEquipmentDialog(false)
     // Reset form
-    setNewInstrument({
+    setNewEquipment({
       name: "",
-      model: "",
+      department: "",
       category: "",
       location: "",
       description: "",
     })
   }
 
-  const handleEditInstrument = (instrument: any) => {
-    setSelectedInstrument(instrument)
-    setShowEditInstrumentDialog(true)
+  const handleEditEquipment = (equipment: any) => {
+    setSelectedEquipment(equipment)
+    setShowEditEquipmentDialog(true)
   }
 
-  const handleAssignAdmins = (instrument: any) => {
-    setSelectedInstrument(instrument)
-    setSelectedAdmins(instrument.admins || [])
+  const handleAssignAdmins = (equipment: any) => {
+    setSelectedEquipment(equipment)
+    setSelectedAdmins(equipment.admins || [])
     setShowAssignAdminsDialog(true)
   }
 
   const handleSaveAdmins = () => {
     // In a real app, you would send this to your backend
-    console.log("Saving admins for instrument:", selectedInstrument?.id, selectedAdmins)
+    console.log("Saving admins for equipment:", selectedEquipment?.id, selectedAdmins)
     setShowAssignAdminsDialog(false)
   }
 
@@ -177,15 +194,15 @@ export default function SuperAdminDashboardPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
-      <p className="text-gray-500 mb-8">Manage instruments, assign admins, and monitor system usage</p>
+      <p className="text-gray-500 mb-8">Manage equipment, assign admins, and monitor system usage</p>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Total Instruments</CardTitle>
+            <CardTitle className="text-xl">Total Equipment</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{instruments.length}</div>
+              <div className="text-3xl font-bold">{equipmentList.length}</div>
             <p className="text-sm text-gray-500">Registered equipment</p>
           </CardContent>
         </Card>
@@ -196,7 +213,7 @@ export default function SuperAdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{allPotentialAdmins.length}</div>
-            <p className="text-sm text-gray-500">Instrument administrators</p>
+            <p className="text-sm text-gray-500">Equipment administrators</p>
           </CardContent>
         </Card>
 
@@ -221,11 +238,11 @@ export default function SuperAdminDashboardPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="instruments" className="space-y-4" onValueChange={setActiveTab}>
+      <Tabs defaultValue="equipment" className="space-y-4" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="instruments">
+          <TabsTrigger value="equipment">
             <Settings className="h-4 w-4 mr-2" />
-            Instruments
+            Equipment
           </TabsTrigger>
           <TabsTrigger value="admins">
             <Users className="h-4 w-4 mr-2" />
@@ -241,49 +258,49 @@ export default function SuperAdminDashboardPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="instruments" className="space-y-4">
+        <TabsContent value="equipment" className="space-y-4">
           <div className="flex justify-between items-center">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search instruments..."
+                placeholder="Search equipment..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Dialog open={showAddInstrumentDialog} onOpenChange={setShowAddInstrumentDialog}>
+            <Dialog open={showAddEquipmentDialog} onOpenChange={setShowAddEquipmentDialog}>
               <DialogTrigger asChild>
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Add New Instrument
+                  Add New Equipment
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
-                  <DialogTitle>Add New Instrument</DialogTitle>
+                  <DialogTitle>Add New Equipment</DialogTitle>
                   <DialogDescription>
-                    Enter the details of the new instrument to add it to the system.
+                    Enter the details of the new equipment to add it to the system.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Instrument Name</Label>
+                      <Label htmlFor="name">Equipment Name</Label>
                       <Input
                         id="name"
-                        placeholder="Enter instrument name"
-                        value={newInstrument.name}
-                        onChange={(e) => setNewInstrument({ ...newInstrument, name: e.target.value })}
+                        placeholder="Enter equipment name"
+                        value={newEquipment.name}
+                        onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="model">Model</Label>
+                      <Label htmlFor="department">Department</Label>
                       <Input
-                        id="model"
-                        placeholder="Enter model number"
-                        value={newInstrument.model}
-                        onChange={(e) => setNewInstrument({ ...newInstrument, model: e.target.value })}
+                        id="department"
+                        placeholder="Enter department"
+                        value={newEquipment.department}
+                        onChange={(e) => setNewEquipment({ ...newEquipment, department: e.target.value })}
                       />
                     </div>
                   </div>
@@ -291,8 +308,8 @@ export default function SuperAdminDashboardPage() {
                     <div className="space-y-2">
                       <Label htmlFor="category">Category</Label>
                       <Select
-                        value={newInstrument.category}
-                        onValueChange={(value) => setNewInstrument({ ...newInstrument, category: value })}
+                        value={newEquipment.category}
+                        onValueChange={(value) => setNewEquipment({ ...newEquipment, category: value })}
                       >
                         <SelectTrigger id="category">
                           <SelectValue placeholder="Select category" />
@@ -311,8 +328,8 @@ export default function SuperAdminDashboardPage() {
                       <Input
                         id="location"
                         placeholder="Enter location (e.g., Lab 101)"
-                        value={newInstrument.location}
-                        onChange={(e) => setNewInstrument({ ...newInstrument, location: e.target.value })}
+                        value={newEquipment.location}
+                        onChange={(e) => setNewEquipment({ ...newEquipment, location: e.target.value })}
                       />
                     </div>
                   </div>
@@ -320,17 +337,17 @@ export default function SuperAdminDashboardPage() {
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
-                      placeholder="Enter instrument description"
-                      value={newInstrument.description}
-                      onChange={(e) => setNewInstrument({ ...newInstrument, description: e.target.value })}
+                      placeholder="Enter equipment description"
+                      value={newEquipment.description}
+                      onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })}
                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowAddInstrumentDialog(false)}>
+                  <Button variant="outline" onClick={() => setShowAddEquipmentDialog(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleAddInstrument}>Add Instrument</Button>
+                  <Button onClick={handleAddEquipment}>Add Equipment</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -341,7 +358,7 @@ export default function SuperAdminDashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Model</TableHead>
+                  <TableHead>Department</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Status</TableHead>
@@ -350,43 +367,43 @@ export default function SuperAdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInstruments.map((instrument) => (
-                  <TableRow key={instrument.id}>
-                    <TableCell className="font-medium">{instrument.name}</TableCell>
-                    <TableCell>{instrument.model}</TableCell>
-                    <TableCell>{instrument.category}</TableCell>
-                    <TableCell>{instrument.location}</TableCell>
+                {filteredEquipment.map((equipment) => (
+                  <TableRow key={equipment.id}>
+                    <TableCell className="font-medium">{equipment.name}</TableCell>
+                    <TableCell>{equipment.department}</TableCell>
+                    <TableCell>{equipment.category}</TableCell>
+                    <TableCell>{equipment.location}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          instrument.status === "Available"
+                          equipment.status === "Available"
                             ? "default"
-                            : instrument.status === "Reserved"
+                            : equipment.status === "Reserved"
                               ? "secondary"
                               : "destructive"
                         }
                       >
-                        {instrument.status}
+                        {equipment.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex -space-x-2">
-                        {instrument.admins.map((admin, index) => (
+                        {equipment.admins.map((admin, index) => (
                           <Avatar key={admin.id} className="h-8 w-8 border-2 border-background">
                             <AvatarFallback>{admin.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                         ))}
-                        {instrument.admins.length === 0 && (
+                        {equipment.admins.length === 0 && (
                           <span className="text-sm text-gray-500">No admins assigned</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditInstrument(instrument)}>
+                        <Button variant="outline" size="sm" onClick={() => handleEditEquipment(equipment)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleAssignAdmins(instrument)}>
+                        <Button variant="outline" size="sm" onClick={() => handleAssignAdmins(equipment)}>
                           <Users className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm">
@@ -396,10 +413,10 @@ export default function SuperAdminDashboardPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filteredInstruments.length === 0 && (
+                {filteredEquipment.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      No instruments found.
+                      No equipment found.
                     </TableCell>
                   </TableRow>
                 )}
@@ -416,14 +433,14 @@ export default function SuperAdminDashboardPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Assigned Instruments</TableHead>
+                  <TableHead>Assigned Equipment</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {allPotentialAdmins.map((admin) => {
-                  const assignedInstruments = instruments.filter((instrument) =>
-                    instrument.admins.some((a) => a.id === admin.id),
+                  const assignedEquipment = equipmentList.filter((equipment) =>
+                    equipment.admins.some((a) => a.id === admin.id),
                   )
 
                   return (
@@ -440,13 +457,13 @@ export default function SuperAdminDashboardPage() {
                       <TableCell>{admin.department}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {assignedInstruments.map((instrument) => (
-                            <Badge key={instrument.id} variant="outline" className="mr-1">
-                              {instrument.name}
+                          {assignedEquipment.map((equipment) => (
+                            <Badge key={equipment.id} variant="outline" className="mr-1">
+                              {equipment.name}
                             </Badge>
                           ))}
-                          {assignedInstruments.length === 0 && (
-                            <span className="text-sm text-gray-500">No instruments assigned</span>
+                          {assignedEquipment.length === 0 && (
+                            <span className="text-sm text-gray-500">No equipment assigned</span>
                           )}
                         </div>
                       </TableCell>
@@ -488,28 +505,28 @@ export default function SuperAdminDashboardPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Edit Instrument Dialog */}
-      <Dialog open={showEditInstrumentDialog} onOpenChange={setShowEditInstrumentDialog}>
+      {/* Edit Equipment Dialog */}
+      <Dialog open={showEditEquipmentDialog} onOpenChange={setShowEditEquipmentDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit Instrument</DialogTitle>
-            <DialogDescription>Update the details of {selectedInstrument?.name}</DialogDescription>
+            <DialogTitle>Edit Equipment</DialogTitle>
+            <DialogDescription>Update the details of {selectedEquipment?.name}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Instrument Name</Label>
-                <Input id="edit-name" defaultValue={selectedInstrument?.name} />
+                <Label htmlFor="edit-name">Equipment Name</Label>
+                <Input id="edit-name" defaultValue={selectedEquipment?.name} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-model">Model</Label>
-                <Input id="edit-model" defaultValue={selectedInstrument?.model} />
+                <Label htmlFor="edit-department">Department</Label>
+                <Input id="edit-department" defaultValue={selectedEquipment?.department} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-category">Category</Label>
-                <Select defaultValue={selectedInstrument?.category}>
+                <Select defaultValue={selectedEquipment?.category}>
                   <SelectTrigger id="edit-category">
                     <SelectValue />
                   </SelectTrigger>
@@ -524,12 +541,12 @@ export default function SuperAdminDashboardPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-location">Location</Label>
-                <Input id="edit-location" defaultValue={selectedInstrument?.location} />
+                <Input id="edit-location" defaultValue={selectedEquipment?.location} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-status">Status</Label>
-              <Select defaultValue={selectedInstrument?.status}>
+              <Select defaultValue={selectedEquipment?.status}>
                 <SelectTrigger id="edit-status">
                   <SelectValue />
                 </SelectTrigger>
@@ -542,7 +559,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditInstrumentDialog(false)}>
+            <Button variant="outline" onClick={() => setShowEditEquipmentDialog(false)}>
               Cancel
             </Button>
             <Button>Save Changes</Button>
@@ -555,7 +572,7 @@ export default function SuperAdminDashboardPage() {
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Assign Administrators</DialogTitle>
-            <DialogDescription>Assign up to 2 administrators for {selectedInstrument?.name}</DialogDescription>
+            <DialogDescription>Assign up to 2 administrators for {selectedEquipment?.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
