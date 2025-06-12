@@ -1,4 +1,4 @@
-// app/api/booking/[id]/route.ts
+// app/api/booking/[id]/route.ts - GET, PUT, PATCH, DELETE
 
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
