@@ -62,11 +62,8 @@ interface EquipmentInfo {
 }
 
 
-const assignedInstruments: Instrument[] = [
-  { id: 2, name: "Confocal Microscope" },
-]
 interface Instrument {
-  id: number
+  id: string
   name: string
 }
 
@@ -87,13 +84,14 @@ export default function AdminDashboardPage() {
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
   const [bookedSlotsByDate, setBookedSlotsByDate] = useState<{ [equipmentId: string]: { [date: string]: string[] } }>({});
   const [slotLoading, setSlotLoading] = useState(false);
+  const [assignedInstruments, setAssignedInstruments] = useState<Instrument[]>([]);
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
   setLoading(true);
   Promise.all([
-    fetch("/api/booking").then((res) => res.json()),
+    fetch("/api/admin/bookings").then((res) => res.json()),
     fetch("/api/equipment").then((res) => res.json()),
   ])
     .then(([bookings, equipmentList]: [any[], any[]]) => {
@@ -121,6 +119,14 @@ export default function AdminDashboardPage() {
 
       setAllBookings(mapped);
       setpendingBookings(mapped.filter((b) => b.status === "pending"));
+
+      const uniqueMap = new Map<string, string>();
+      mapped.forEach((b) => {
+        if (!uniqueMap.has(b.equipmentId)) {
+          uniqueMap.set(b.equipmentId, b.equipment);
+        }
+      });
+      setAssignedInstruments(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
@@ -187,7 +193,7 @@ export default function AdminDashboardPage() {
     setLoading(true);
     try {
       const [bookingsRes, equipmentRes] = await Promise.all([
-        fetch("/api/booking"),
+        fetch("/api/admin/bookings"),
         fetch("/api/equipment"),
       ]);
       const bookings = await bookingsRes.json();
@@ -217,6 +223,14 @@ export default function AdminDashboardPage() {
 
       setAllBookings(mapped);
       setpendingBookings(mapped.filter((b: any) => b.status === "pending"));
+
+      const uniqueMap = new Map<string, string>();
+      mapped.forEach((b: any) => {
+        if (!uniqueMap.has(b.equipmentId)) {
+          uniqueMap.set(b.equipmentId, b.equipment);
+        }
+      });
+      setAssignedInstruments(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
