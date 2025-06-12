@@ -43,10 +43,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Admin already exists" }, { status: 409 })
   }
 
+  const user = await User.findOne({ email })
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 })
+  }
+
   const admin = await Admin.create({
     email,
     assignedInstruments: assignedInstruments || [],
   })
+
+  if (user.role !== "Super-admin" && user.role !== "admin") {
+    user.role = "admin"
+    await user.save()
+  }
 
   return NextResponse.json(admin, { status: 201 })
 }

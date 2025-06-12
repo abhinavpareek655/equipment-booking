@@ -69,6 +69,10 @@ export default function SuperAdminDashboardPage() {
     email: "",
     assignedInstruments: [],
   })
+  const [userResults, setUserResults] = useState<any[]>([])
+  const [showManageAccessDialog, setShowManageAccessDialog] = useState(false)
+  const [accessAdmin, setAccessAdmin] = useState<AdminInfo | null>(null)
+  const [accessAssignments, setAccessAssignments] = useState<string[]>([])
 
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([])
 
@@ -113,6 +117,20 @@ export default function SuperAdminDashboardPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (newAdmin.email.trim()) {
+        fetch(`/api/users?search=${encodeURIComponent(newAdmin.email)}`)
+          .then((res) => res.json())
+          .then((data) => setUserResults(data))
+          .catch(() => setUserResults([]))
+      } else {
+        setUserResults([])
+      }
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [newAdmin.email])
 
   // Filter equipment based on search term
   const filteredEquipment = equipmentList.filter(
@@ -182,6 +200,28 @@ export default function SuperAdminDashboardPage() {
       if (selectedAdmins.length < 2) {
         setSelectedAdmins([...selectedAdmins, admin])
       }
+    }
+  }
+
+  const openManageAccess = (admin: AdminInfo) => {
+    setAccessAdmin(admin)
+    setAccessAssignments(admin.instruments.map((i) => i.id))
+    setShowManageAccessDialog(true)
+  }
+
+  const handleSaveAccess = async () => {
+    if (!accessAdmin) return
+    try {
+      const res = await fetch(`/api/admin/${accessAdmin.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignedInstruments: accessAssignments }),
+      })
+      if (!res.ok) throw new Error(`Failed: ${res.status}`)
+      await fetchData()
+      setShowManageAccessDialog(false)
+    } catch (err) {
+      console.error("Failed to update access", err)
     }
   }
 
@@ -461,13 +501,30 @@ export default function SuperAdminDashboardPage() {
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="admin-email">User Email</Label>
-                    <Input
-                      id="admin-email"
-                      placeholder="email@example.com"
-                      value={newAdmin.email}
-                      onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
-                    />
-                  </div>
+                  <Input
+                    id="admin-email"
+                    placeholder="email@example.com"
+                    value={newAdmin.email}
+                    onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                  />
+                  {userResults.length > 0 && (
+                    <div className="border rounded-md max-h-40 overflow-y-auto mt-1">
+                      {userResults.map((u) => (
+                        <div
+                          key={u.id}
+                          className="px-2 py-1 text-sm hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setNewAdmin({ ...newAdmin, email: u.email })
+                            setUserResults([])
+                          }}
+                        >
+                          <p className="font-medium">{u.name}</p>
+                          <p className="text-xs text-gray-500">{u.email}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                   <div className="space-y-2">
                     <Label>Assign Instruments</Label>
                     <div className="grid gap-2 max-h-40 overflow-y-auto">
@@ -548,7 +605,7 @@ export default function SuperAdminDashboardPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => openManageAccess(admin)}>
                           Manage Access
                         </Button>
                       </TableCell>
@@ -749,7 +806,43 @@ export default function SuperAdminDashboardPage() {
             <Button onClick={handleSaveAdmins}>Save Administrators</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
+        </Dialog>
+
+        {/* Manage Access Dialog */}
+        <Dialog open={showManageAccessDialog} onOpenChange={setShowManageAccessDialog}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Manage Access</DialogTitle>
+              <DialogDescription>
+                Modify equipment access for {accessAdmin?.name || accessAdmin?.email}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2 max-h-60 overflow-y-auto py-4">
+              {equipmentList.map((eq) => (
+                <div key={eq.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`ma-${eq.id}`}
+                    checked={accessAssignments.includes(eq.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setAccessAssignments([...accessAssignments, eq.id])
+                      } else {
+                        setAccessAssignments(accessAssignments.filter((id) => id !== eq.id))
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`ma-${eq.id}`}>{eq.name}</Label>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowManageAccessDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveAccess}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
+  }
