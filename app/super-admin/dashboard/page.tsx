@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils"
 
 // TypeScript interface matching the Equipment model
 interface Equipment {
-  id: number
+  id: string
   name: string
   department: string
   category: string
@@ -42,73 +42,6 @@ interface Equipment {
   uptime?: string
   admins: { id: number; name: string; email: string }[]
 }
-
-// Mock data for equipment
-const equipmentList: Equipment[] = [
-  {
-    id: 1,
-    name: "Flow Cytometer",
-    department: "BD FACSCanto II",
-    category: "Cell Analysis",
-    location: "Lab 101",
-    status: "Available",
-    admins: [
-      { id: 1, name: "Dr. Anjali Patel", email: "anjali.patel@curaj.ac.in" },
-      { id: 2, name: "Dr. Vikram Mehra", email: "vikram.mehra@curaj.ac.in" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Confocal Microscope",
-    department: "Zeiss LSM 880",
-    category: "Microscopy",
-    location: "Lab 102",
-    status: "Maintenance",
-    admins: [{ id: 3, name: "Dr. Rajesh Malhotra", email: "rajesh.malhotra@curaj.ac.in" }],
-  },
-  {
-    id: 3,
-    name: "PCR Thermal Cycler",
-    department: "Bio-Rad CFX96",
-    category: "Molecular Biology",
-    location: "Lab 103",
-    status: "Available",
-    admins: [
-      { id: 2, name: "Dr. Vikram Mehra", email: "vikram.mehra@curaj.ac.in" },
-      { id: 4, name: "Dr. Shobha Rao", email: "shobha.rao@curaj.ac.in" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Ultra-centrifuge",
-    department: "Beckman Coulter Optima XPN",
-    category: "Separation",
-    location: "Lab 104",
-    status: "Available",
-    admins: [{ id: 1, name: "Dr. Anjali Patel", email: "anjali.patel@curaj.ac.in" }],
-  },
-  {
-    id: 5,
-    name: "Mass Spectrometer",
-    department: "Thermo Scientific Q Exactive",
-    category: "Analysis",
-    location: "Lab 105",
-    status: "Available",
-    admins: [{ id: 5, name: "Dr. Sanjay Kumar", email: "sanjay.kumar@curaj.ac.in" }],
-  },
-  {
-    id: 6,
-    name: "HPLC System",
-    department: "Agilent 1260 Infinity II",
-    category: "Chromatography",
-    location: "Lab 106",
-    status: "Available",
-    admins: [
-      { id: 4, name: "Dr. Shobha Rao", email: "shobha.rao@curaj.ac.in" },
-      { id: 5, name: "Dr. Sanjay Kumar", email: "sanjay.kumar@curaj.ac.in" },
-    ],
-  },
-]
 
 // Mock data for all faculty/staff who can be admins
 const allPotentialAdmins = [
@@ -132,6 +65,8 @@ export default function SuperAdminDashboardPage() {
   const [selectedAdmins, setSelectedAdmins] = useState<any[]>([])
   const [adminSearchOpen, setAdminSearchOpen] = useState(false)
 
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>([])
+
   // New equipment form state
   const [newEquipment, setNewEquipment] = useState({
     name: "",
@@ -141,6 +76,26 @@ export default function SuperAdminDashboardPage() {
     description: "",
   })
 
+  // Load equipment list from API
+  useEffect(() => {
+    fetch("/api/equipment")
+      .then((res) => res.json())
+      .then((data) =>
+        setEquipmentList(
+          data.map((eq: any) => ({
+            id: eq._id,
+            name: eq.name,
+            department: eq.department,
+            category: eq.category || "",
+            location: eq.location || "",
+            status: eq.status || "Available",
+            admins: [],
+          }))
+        )
+      )
+      .catch((err) => console.error("Failed to fetch equipment", err))
+  }, [])
+
   // Filter equipment based on search term
   const filteredEquipment = equipmentList.filter(
     (equipment) =>
@@ -149,18 +104,43 @@ export default function SuperAdminDashboardPage() {
       equipment.category.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleAddEquipment = () => {
-    // In a real app, you would send this to your backend
-    console.log("Adding new equipment:", newEquipment)
-    setShowAddEquipmentDialog(false)
-    // Reset form
-    setNewEquipment({
-      name: "",
-      department: "",
-      category: "",
-      location: "",
-      description: "",
-    })
+  const handleAddEquipment = async () => {
+    try {
+      const res = await fetch("/api/equipment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newEquipment.name,
+          department: newEquipment.department,
+          category: newEquipment.category,
+          location: newEquipment.location,
+        }),
+      })
+      if (!res.ok) throw new Error(`Failed: ${res.status}`)
+      const created = await res.json()
+      setEquipmentList([
+        ...equipmentList,
+        {
+          id: created._id,
+          name: created.name,
+          department: created.department,
+          category: created.category || "",
+          location: created.location || "",
+          status: created.status || "Available",
+          admins: [],
+        },
+      ])
+      setShowAddEquipmentDialog(false)
+      setNewEquipment({
+        name: "",
+        department: "",
+        category: "",
+        location: "",
+        description: "",
+      })
+    } catch (err) {
+      console.error("Failed to add equipment", err)
+    }
   }
 
   const handleEditEquipment = (equipment: any) => {
