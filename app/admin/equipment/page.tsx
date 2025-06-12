@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Settings2, AlertCircle, CalendarRange, History, Info } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useEffect } from "react"
+import { formatDistanceToNow } from "date-fns"
 
 type EquipmentItem = {
   id: string
@@ -33,6 +33,20 @@ type EquipmentItem = {
   lastMaintenance: string
   nextMaintenance: string
   description: string
+}
+
+type Booking = {
+  id: string
+  user: string
+  userEmail: string
+  equipmentId: string
+  date: string
+  status: string
+}
+
+type UsageEntry = {
+  date: string
+  status: string
 }
 
 // Maintenance history mock data
@@ -74,7 +88,11 @@ const maintenanceHistory = [
 export default function EquipmentManagementPage() {
   const [activeTab, setActiveTab] = useState("inventory")
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null)
-  const [equipment, setEquipment] = useState<EquipmentItem[]>([]) 
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [usageUser, setUsageUser] = useState<{name: string; email: string; history: UsageEntry[]}|null>(null)
+  const [showUsageDialog, setShowUsageDialog] = useState(false)
+  const [now, setNow] = useState(new Date())
   
   const handleMaintenanceRequest = (equipmentId: string) => {
     setSelectedEquipment(equipmentId)
@@ -82,17 +100,39 @@ export default function EquipmentManagementPage() {
     alert(`Maintenance request submitted for equipment ID: ${equipmentId}`)
   }
 
+  const handleUsageLog = (equipmentId: string) => {
+    const logs = bookings.filter((b) => b.equipmentId === equipmentId)
+    if (logs.length === 0) {
+      setUsageUser(null)
+      setShowUsageDialog(true)
+      return
+    }
+    const grouped: Record<string, { name: string; email: string; entries: UsageEntry[] }> = {}
+    logs.forEach((b) => {
+      if (!grouped[b.userEmail]) {
+        grouped[b.userEmail] = { name: b.user, email: b.userEmail, entries: [] }
+      }
+      grouped[b.userEmail].entries.push({ date: b.date, status: b.status })
+    })
+    const users = Object.values(grouped).map((u) => ({
+      ...u,
+      last: Math.max(...u.entries.map((e) => new Date(e.date).getTime())),
+    }))
+    users.sort((a, b) => a.last - b.last)
+    const target = users[0]
+    target.entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    setUsageUser({ name: target.name, email: target.email, history: target.entries })
+    setShowUsageDialog(true)
+  }
+
   useEffect(() => {
-    console.log("📦 Fetching equipment from /api/equipment")
-    fetch("/api/equipment")
-      .then(async (res) => {
-        const text = await res.text()
-        console.log("📄 Raw response:", text)
-        if (!res.ok) throw new Error(`❌ Status ${res.status}`)
-        return JSON.parse(text)
-      })
-      .then((data) => {
-        const mapped = data.map((item: any) => ({
+    console.log("📦 Fetching equipment and bookings")
+    Promise.all([
+      fetch("/api/equipment").then((res) => res.json()),
+      fetch("/api/booking").then((res) => res.json()),
+    ])
+      .then(([equipmentData, bookingData]) => {
+        const mappedEquip = equipmentData.map((item: any) => ({
           id: item._id,
           name: item.name,
           model: item.model || "Unknown",
@@ -103,9 +143,23 @@ export default function EquipmentManagementPage() {
           nextMaintenance: item.nextMaintenance || new Date().toISOString(),
           description: item.description || "No description",
         }))
-        setEquipment(mapped)
+        const mappedBookings = bookingData.map((b: any) => ({
+          id: b.id?.toString() ?? '',
+          user: b.userName,
+          userEmail: b.userEmail,
+          equipmentId: b.equipmentId,
+          date: b.date,
+          status: b.status,
+        }))
+        setEquipment(mappedEquip)
+        setBookings(mappedBookings)
       })
       .catch((err) => console.error("🚨 Fetch error:", err))
+  }, [])
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(t)
   }, [])
 
   return (
@@ -308,7 +362,7 @@ export default function EquipmentManagementPage() {
                     <Button variant="outline" size="sm" onClick={() => handleMaintenanceRequest(item.id)}>
                       <Settings2 className="mr-1 h-4 w-4" /> Maintenance
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleUsageLog(item.id)}>
                       <History className="mr-1 h-4 w-4" /> Usage Log
                     </Button>
                   </div>
@@ -484,6 +538,44 @@ export default function EquipmentManagementPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showUsageDialog} onOpenChange={setShowUsageDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Usage History</DialogTitle>
+            <DialogDescription>
+              {usageUser ? `Least recent user: ${usageUser.name}` : "No usage found"}
+            </DialogDescription>
+          </DialogHeader>
+          {usageUser && (
+            <Table className="mt-2">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>When</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {usageUser.history.map((h, i) => {
+                  const days = Math.floor((now.getTime() - new Date(h.date).getTime()) / 86400000)
+                  const color = days <= 1 ? "text-green-600" : days <= 3 ? "text-yellow-600" : "text-red-600"
+                  return (
+                    <TableRow key={i}>
+                      <TableCell>{new Date(h.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{h.status}</TableCell>
+                      <TableCell className={color}>{formatDistanceToNow(new Date(h.date), { addSuffix: true })}</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setShowUsageDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
