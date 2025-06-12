@@ -8,7 +8,7 @@ project-root/
 │       │   └── register/route.ts
 │       ├── booking/             # booking CRUD
 │       │   ├── route.ts         # POST booking
-│       │   └── [id]/route.ts    # GET, PUT, DELETE
+│       │   └── [id]/route.ts    # GET, PUT, PATCH, DELETE
 │       ├── equipment/           # add/view equipment
 │       │   └── route.ts
 │       ├── users/               # user profile management
@@ -22,6 +22,6 @@ project-root/
 │   └── Booking.ts
 ├── .env.local                   # MongoDB URI & secrets
 ├── package.json
-├── next.config.js
+├── next.config.mjs
 └── tsconfig.json
 ```
