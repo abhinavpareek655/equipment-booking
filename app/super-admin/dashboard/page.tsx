@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
 import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -40,20 +41,16 @@ interface Equipment {
   totalHours?: number
   maintenanceHours?: number
   uptime?: string
-  admins: { id: number; name: string; email: string }[]
+  admins: { id: string; name: string; email: string }[]
 }
 
-// Mock data for all faculty/staff who can be admins
-const allPotentialAdmins = [
-  { id: 1, name: "Dr. Anjali Patel", email: "anjali.patel@curaj.ac.in", department: "Biochemistry" },
-  { id: 2, name: "Dr. Vikram Mehra", email: "vikram.mehra@curaj.ac.in", department: "Molecular Biology" },
-  { id: 3, name: "Dr. Rajesh Malhotra", email: "rajesh.malhotra@curaj.ac.in", department: "Genetics" },
-  { id: 4, name: "Dr. Shobha Rao", email: "shobha.rao@curaj.ac.in", department: "Microbiology" },
-  { id: 5, name: "Dr. Sanjay Kumar", email: "sanjay.kumar@curaj.ac.in", department: "Biotechnology" },
-  { id: 6, name: "Dr. Priya Singh", email: "priya.singh@curaj.ac.in", department: "Biochemistry" },
-  { id: 7, name: "Dr. Rahul Sharma", email: "rahul.sharma@curaj.ac.in", department: "Molecular Biology" },
-  { id: 8, name: "Dr. Neha Gupta", email: "neha.gupta@curaj.ac.in", department: "Genetics" },
-]
+interface AdminInfo {
+  id: string
+  name: string
+  email: string
+  department: string
+  instruments: { id: string; name: string }[]
+}
 
 export default function SuperAdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("equipment")
@@ -64,6 +61,14 @@ export default function SuperAdminDashboardPage() {
   const [selectedEquipment, setSelectedEquipment] = useState<any>(null)
   const [selectedAdmins, setSelectedAdmins] = useState<any[]>([])
   const [adminSearchOpen, setAdminSearchOpen] = useState(false)
+
+  const [adminList, setAdminList] = useState<AdminInfo[]>([])
+  const [adminSearchTerm, setAdminSearchTerm] = useState("")
+  const [showAddAdminDialog, setShowAddAdminDialog] = useState(false)
+  const [newAdmin, setNewAdmin] = useState<{ email: string; assignedInstruments: string[] }>({
+    email: "",
+    assignedInstruments: [],
+  })
 
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([])
 
@@ -76,24 +81,37 @@ export default function SuperAdminDashboardPage() {
     description: "",
   })
 
-  // Load equipment list from API
+  // Load equipment and admin list from API
+  const fetchData = async () => {
+    try {
+      const [eqRes, adminRes] = await Promise.all([
+        fetch("/api/equipment"),
+        fetch("/api/admin"),
+      ])
+      const eqData = await eqRes.json()
+      const adminData: AdminInfo[] = await adminRes.json()
+
+      const eqList = eqData.map((eq: any) => ({
+        id: eq._id,
+        name: eq.name,
+        department: eq.department,
+        category: eq.category || "",
+        location: eq.location || "",
+        status: eq.status || "Available",
+        admins: adminData
+          .filter((ad) => ad.instruments.some((i) => i.id === eq._id))
+          .map((ad) => ({ id: ad.id, name: ad.name, email: ad.email })),
+      }))
+
+      setAdminList(adminData)
+      setEquipmentList(eqList)
+    } catch (err) {
+      console.error("Failed to fetch equipment or admins", err)
+    }
+  }
+
   useEffect(() => {
-    fetch("/api/equipment")
-      .then((res) => res.json())
-      .then((data) =>
-        setEquipmentList(
-          data.map((eq: any) => ({
-            id: eq._id,
-            name: eq.name,
-            department: eq.department,
-            category: eq.category || "",
-            location: eq.location || "",
-            status: eq.status || "Available",
-            admins: [],
-          }))
-        )
-      )
-      .catch((err) => console.error("Failed to fetch equipment", err))
+    fetchData()
   }, [])
 
   // Filter equipment based on search term
@@ -102,6 +120,13 @@ export default function SuperAdminDashboardPage() {
       equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       equipment.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       equipment.category.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const filteredAdmins = adminList.filter(
+    (admin) =>
+      admin.name.toLowerCase().includes(adminSearchTerm.toLowerCase()) ||
+      admin.email.toLowerCase().includes(adminSearchTerm.toLowerCase()) ||
+      admin.department.toLowerCase().includes(adminSearchTerm.toLowerCase()),
   )
 
   const handleAddEquipment = async () => {
@@ -118,18 +143,7 @@ export default function SuperAdminDashboardPage() {
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       const created = await res.json()
-      setEquipmentList([
-        ...equipmentList,
-        {
-          id: created._id,
-          name: created.name,
-          department: created.department,
-          category: created.category || "",
-          location: created.location || "",
-          status: created.status || "Available",
-          admins: [],
-        },
-      ])
+      await fetchData()
       setShowAddEquipmentDialog(false)
       setNewEquipment({
         name: "",
@@ -171,6 +185,22 @@ export default function SuperAdminDashboardPage() {
     }
   }
 
+  const handleAddAdmin = async () => {
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAdmin),
+      })
+      if (!res.ok) throw new Error(`Failed: ${res.status}`)
+      await fetchData()
+      setShowAddAdminDialog(false)
+      setNewAdmin({ email: "", assignedInstruments: [] })
+    } catch (err) {
+      console.error("Failed to add admin", err)
+    }
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
@@ -192,7 +222,7 @@ export default function SuperAdminDashboardPage() {
             <CardTitle className="text-xl">Active Admins</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{allPotentialAdmins.length}</div>
+            <div className="text-3xl font-bold">{adminList.length}</div>
             <p className="text-sm text-gray-500">Equipment administrators</p>
           </CardContent>
         </Card>
@@ -406,6 +436,76 @@ export default function SuperAdminDashboardPage() {
         </TabsContent>
 
         <TabsContent value="admins" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="relative w-full max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search admins..."
+                className="pl-8"
+                value={adminSearchTerm}
+                onChange={(e) => setAdminSearchTerm(e.target.value)}
+              />
+            </div>
+            <Dialog open={showAddAdminDialog} onOpenChange={setShowAddAdminDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Admin
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Add Admin</DialogTitle>
+                  <DialogDescription>Assign a user as equipment administrator.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-email">User Email</Label>
+                    <Input
+                      id="admin-email"
+                      placeholder="email@example.com"
+                      value={newAdmin.email}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Assign Instruments</Label>
+                    <div className="grid gap-2 max-h-40 overflow-y-auto">
+                      {equipmentList.map((eq) => (
+                        <div key={eq.id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`assign-${eq.id}`}
+                            checked={newAdmin.assignedInstruments.includes(eq.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setNewAdmin((prev) => ({
+                                  ...prev,
+                                  assignedInstruments: [...prev.assignedInstruments, eq.id],
+                                }))
+                              } else {
+                                setNewAdmin((prev) => ({
+                                  ...prev,
+                                  assignedInstruments: prev.assignedInstruments.filter((id) => id !== eq.id),
+                                }))
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`assign-${eq.id}`}>{eq.name}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowAddAdminDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddAdmin}>Add Admin</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -418,7 +518,7 @@ export default function SuperAdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allPotentialAdmins.map((admin) => {
+                {filteredAdmins.map((admin) => {
                   const assignedEquipment = equipmentList.filter((equipment) =>
                     equipment.admins.some((a) => a.id === admin.id),
                   )
@@ -430,7 +530,7 @@ export default function SuperAdminDashboardPage() {
                           <Avatar className="h-8 w-8 mr-2">
                             <AvatarFallback>{admin.name.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          {admin.name}
+                          {admin.name || admin.email}
                         </div>
                       </TableCell>
                       <TableCell>{admin.email}</TableCell>
@@ -608,7 +708,7 @@ export default function SuperAdminDashboardPage() {
                     <CommandList>
                       <CommandEmpty>No administrators found.</CommandEmpty>
                       <CommandGroup>
-                        {allPotentialAdmins
+                        {adminList
                           .filter((admin) => !selectedAdmins.some((a) => a.id === admin.id))
                           .map((admin) => (
                             <CommandItem
