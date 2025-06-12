@@ -1,41 +1,52 @@
-import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/db";
-import Admin from "@/models/Admin";
-import User from "@/models/User";
-import Equipment from "@/models/Equipment";
+import { NextResponse } from "next/server"
+import { dbConnect } from "@/lib/db"
+import Admin from "@/models/Admin"
+import User from "@/models/User"
 
+// GET /api/admin
 export async function GET() {
-  await dbConnect();
+  await dbConnect()
+  const admins = await Admin.find({})
+    .populate<{ _id: string; name: string }>("assignedInstruments", "name")
+    .lean()
 
-  try {
-    // Get all admins with assigned instrument IDs
-    const admins = await Admin.find({}).lean();
+  const result = await Promise.all(
+    admins.map(async (admin: any) => {
+      const user = await User.findOne({ email: admin.email }, "name department").lean() as { name?: string; department?: string } | null
+      return {
+        id: admin._id.toString(),
+        email: admin.email,
+        name: user?.name || "",
+        department: user?.department || "",
+        instruments: (admin.assignedInstruments || []).map((eq: any) => ({
+          id: eq._id.toString(),
+          name: eq.name,
+        })),
+      }
+    })
+  )
 
-    // For each admin, get user details and assigned instrument details
-    const enrichedAdmins = await Promise.all(
-      admins.map(async (admin: any) => {
-        // Fetch user info
-        const user = await User.findOne({ email: admin.email }).lean();
-        // Fetch assigned instrument details (name)
-        const assignedEquipments = await Equipment.find({
-          _id: { $in: admin.assignedInstruments }
-        }).lean();
+  return NextResponse.json(result)
+}
 
-        return {
-          _id: admin._id,
-          email: admin.email,
-          name: (user && !Array.isArray(user) ? user.name : "Unknown"),
-          department: (user && !Array.isArray(user) ? user.department : ""),
-          assignedInstruments: assignedEquipments.map(eq => ({
-            _id: eq._id,
-            name: eq.name,
-          })),
-        };
-      })
-    );
+// POST /api/admin
+export async function POST(req: Request) {
+  await dbConnect()
+  const { email, assignedInstruments } = await req.json()
 
-    return NextResponse.json(enrichedAdmins);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  if (!email) {
+    return NextResponse.json({ error: "Email required" }, { status: 400 })
   }
+
+  const existing = await Admin.findOne({ email })
+  if (existing) {
+    return NextResponse.json({ error: "Admin already exists" }, { status: 409 })
+  }
+
+  const admin = await Admin.create({
+    email,
+    assignedInstruments: assignedInstruments || [],
+  })
+
+  return NextResponse.json(admin, { status: 201 })
 }
