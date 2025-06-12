@@ -34,7 +34,7 @@ interface UserHistory {
 }
 
 interface Booking {
-  id: number
+  id: string
   user: string
   userEmail: string
   department: string
@@ -127,7 +127,16 @@ export default function AdminDashboardPage() {
       mapped.forEach((b) => {
         if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
         if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
-        slots[b.equipmentId][b.date].push(b.startTime);
+
+        // push the start time and subsequent slots based on duration
+        const [startHour] = b.startTime.split(":").map(Number);
+        for (let i = 0; i < Math.ceil(b.duration); i++) {
+          const slotHour = startHour + i;
+          const slot = `${slotHour.toString().padStart(2, "0")}:00`;
+          if (!slots[b.equipmentId][b.date].includes(slot)) {
+            slots[b.equipmentId][b.date].push(slot);
+          }
+        }
       });
       setBookedSlotsByDate(slots);
 
@@ -214,7 +223,15 @@ export default function AdminDashboardPage() {
       mapped.forEach((b: any) => {
         if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
         if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
-        slots[b.equipmentId][b.date].push(b.startTime);
+
+        const [startHour] = b.startTime.split(":").map(Number);
+        for (let i = 0; i < Math.ceil(b.duration); i++) {
+          const slotHour = startHour + i;
+          const slot = `${slotHour.toString().padStart(2, "0")}:00`;
+          if (!slots[b.equipmentId][b.date].includes(slot)) {
+            slots[b.equipmentId][b.date].push(slot);
+          }
+        }
       });
       setBookedSlotsByDate(slots);
 
