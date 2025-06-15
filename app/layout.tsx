@@ -20,7 +20,7 @@ export const themeColor = "#ffffff";
 export const metadata = {
   title: "DBT BUILDER Equipment Booking System",
   description: "Equipment booking system for the School of Life Sciences, Central University of Rajasthan",
-  generator: "v0.dev",
+  generator: "Next.js",
 }
 
 export default function RootLayout({
@@ -30,6 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel='icon' href='/images/curaj-logo.png'/>
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <div className="flex min-h-screen flex-col">

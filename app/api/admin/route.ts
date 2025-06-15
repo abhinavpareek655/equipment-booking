@@ -53,8 +53,8 @@ export async function POST(req: Request) {
     assignedInstruments: assignedInstruments || [],
   })
 
-  if (user.role !== "Super-admin" && user.role !== "admin") {
-    user.role = "admin"
+  if (user.role !== "Super-admin" && user.role !== "Admin") {
+    user.role = "Admin"
     await user.save()
   }
 

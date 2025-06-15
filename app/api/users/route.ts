@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     : {}
   const users = await User.find(filter).limit(10).lean()
   const result = users.map((u) => ({
-    id: u._id.toString(),
+    id: (u._id as { toString: () => string }).toString(),
     name: u.name,
     email: u.email,
     department: u.department,
