@@ -26,7 +26,7 @@ export async function GET() {
   await dbConnect();
   await autoCompleteBookings();
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   if (!token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -45,7 +45,7 @@ export async function GET() {
     }
 
     const bookingsRaw = await Booking.find({
-      equipmentId: { $in: admin.assignedInstruments },
+      equipmentId: { $in: admin.assignedEquipment },
     })
       .populate<{ equipmentId: { _id: Types.ObjectId; name: string } }>(
         "equipmentId",
