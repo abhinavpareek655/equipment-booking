@@ -31,6 +31,7 @@ interface UserHistory {
   date: string
   equipment: string
   status: string
+  timeSlot: string
 }
 
 interface Booking {
@@ -46,6 +47,7 @@ interface Booking {
   duration: number
   purpose: string
   userHistory: UserHistory[]
+  lastUsed?: string | null
   status?: string
   reason?: string
 }
@@ -113,8 +115,9 @@ export default function AdminDashboardPage() {
           duration:     b.duration,
           purpose:      b.purpose,
           status:       b.status,
-          userHistory:  [],
-        }
+          userHistory:  b.userHistory ?? [],
+          lastUsed:     b.lastUsed ?? null,
+        };
       });
 
       setAllBookings(mapped);
@@ -218,8 +221,9 @@ export default function AdminDashboardPage() {
           duration:     b.duration,
           purpose:      b.purpose,
           status:       b.status,
-          userHistory:  [],
-        }
+          userHistory:  b.userHistory ?? [],
+          lastUsed:     b.lastUsed ?? null,
+        };
       });
 
       setAllBookings(mapped);
@@ -676,6 +680,11 @@ export default function AdminDashboardPage() {
                                 View
                               </Button>
                             )}
+                            {booking.lastUsed && (
+                              <span className="text-xs ml-2 text-gray-500">
+                                Last used on {new Date(booking.lastUsed).toLocaleDateString()}
+                              </span>
+                            )}
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-end gap-2">
@@ -1018,6 +1027,7 @@ export default function AdminDashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
+                  <TableHead>Time Slot</TableHead>
                   <TableHead>Equipment</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
@@ -1026,6 +1036,7 @@ export default function AdminDashboardPage() {
                 {selectedBooking?.userHistory.map((history, index) => (
                   <TableRow key={index}>
                     <TableCell>{new Date(history.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{history.timeSlot}</TableCell>
                     <TableCell>{history.equipment}</TableCell>
                     <TableCell>
                       <Badge
@@ -1044,7 +1055,7 @@ export default function AdminDashboardPage() {
                 ))}
                 {selectedBooking?.userHistory.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center py-4 text-gray-500">
+                    <TableCell colSpan={4} className="text-center py-4 text-gray-500">
                       No booking history found
                     </TableCell>
                   </TableRow>
