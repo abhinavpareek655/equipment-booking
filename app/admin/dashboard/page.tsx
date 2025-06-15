@@ -131,6 +131,7 @@ export default function AdminDashboardPage() {
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
       mapped.forEach((b) => {
+        if (b.status !== "approved") return;
         if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
         if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
 
@@ -235,6 +236,7 @@ export default function AdminDashboardPage() {
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
       mapped.forEach((b: any) => {
+        if (b.status !== "approved") return;
         if (!slots[b.equipmentId]) slots[b.equipmentId] = {};
         if (!slots[b.equipmentId][b.date]) slots[b.equipmentId][b.date] = [];
 
