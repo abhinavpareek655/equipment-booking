@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,51 +8,57 @@ import { Badge } from "@/components/ui/badge"
 import { AlertCircle, Calendar, Clock, MapPin } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-// Mock data for bookings
-const bookings = [
-  {
-    id: 1,
-    equipment: "Flow Cytometer",
-    date: "2025-05-20",
-    timeSlot: "10:00 - 11:00",
-    location: "Lab 101",
-    status: "approved",
-    purpose: "Cell sorting for cancer research project",
-  },
-  {
-    id: 2,
-    equipment: "PCR Thermal Cycler",
-    date: "2025-05-22",
-    timeSlot: "14:00 - 15:00",
-    location: "Lab 103",
-    status: "pending",
-    purpose: "DNA amplification for genomic analysis",
-  },
-  {
-    id: 3,
-    equipment: "HPLC System",
-    date: "2025-05-25",
-    timeSlot: "09:00 - 10:00",
-    location: "Lab 106",
-    status: "rejected",
-    reason: "Equipment scheduled for maintenance",
-    purpose: "Protein purification",
-  },
-  {
-    id: 4,
-    equipment: "Ultra-centrifuge",
-    date: "2025-05-18",
-    timeSlot: "11:00 - 12:00",
-    location: "Lab 104",
-    status: "Completed",
-    purpose: "Membrane isolation",
-  },
-]
+interface Booking {
+  id: string
+  equipment: string
+  equipmentId: string
+  date: string
+  startTime: string
+  duration: number
+  timeSlot: string
+  location: string
+  status: string
+  purpose: string
+  reason?: string
+}
 
 export default function MyBookingsPage() {
   const [activeTab, setActiveTab] = useState("upcoming")
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Filter bookings based on tab
+  useEffect(() => {
+    setLoading(true)
+    fetch("/api/booking/me", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((b: any) => {
+          const [startHour] = b.startTime.split(":").map(Number)
+          const endHour = startHour + b.duration
+          const status =
+            b.status === "approved" && new Date(b.date) < new Date()
+              ? "Completed"
+              : b.status
+          return {
+            id: b.id,
+            equipment: b.equipment,
+            equipmentId: b.equipmentId,
+            date: b.date,
+            startTime: b.startTime,
+            duration: b.duration,
+            timeSlot: `${b.startTime} - ${endHour.toString().padStart(2, "0")}:00`,
+            location: b.location || "N/A",
+            status,
+            purpose: b.purpose,
+            reason: b.reason,
+          }
+        })
+        setBookings(mapped)
+      })
+      .catch((err) => console.error("Failed to fetch bookings:", err))
+      .finally(() => setLoading(false))
+  }, [])
+
   const filteredBookings = bookings.filter((booking) => {
     if (activeTab === "upcoming") {
       return booking.status === "approved" || booking.status === "pending"
