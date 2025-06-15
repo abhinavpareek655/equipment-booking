@@ -49,7 +49,7 @@ interface AdminInfo {
   name: string
   email: string
   department: string
-  instruments: { id: string; name: string }[]
+  equipment: { id: string; name: string }[]
 }
 
 export default function SuperAdminDashboardPage() {
@@ -65,9 +65,9 @@ export default function SuperAdminDashboardPage() {
   const [adminList, setAdminList] = useState<AdminInfo[]>([])
   const [adminSearchTerm, setAdminSearchTerm] = useState("")
   const [showAddAdminDialog, setShowAddAdminDialog] = useState(false)
-  const [newAdmin, setNewAdmin] = useState<{ email: string; assignedInstruments: string[] }>({
+  const [newAdmin, setNewAdmin] = useState<{ email: string; assignedEquipment: string[] }>({
     email: "",
-    assignedInstruments: [],
+    assignedEquipment: [],
   })
   const [userResults, setUserResults] = useState<any[]>([])
   const [showManageAccessDialog, setShowManageAccessDialog] = useState(false)
@@ -103,7 +103,7 @@ export default function SuperAdminDashboardPage() {
         location: eq.location || "",
         status: eq.status || "Available",
         admins: adminData
-          .filter((ad) => ad.instruments.some((i) => i.id === eq._id))
+          .filter((ad) => ad.equipment.some((i) => i.id === eq._id))
           .map((ad) => ({ id: ad.id, name: ad.name, email: ad.email })),
       }))
 
@@ -205,7 +205,7 @@ export default function SuperAdminDashboardPage() {
 
   const openManageAccess = (admin: AdminInfo) => {
     setAccessAdmin(admin)
-    setAccessAssignments(admin.instruments.map((i) => i.id))
+    setAccessAssignments(admin.equipment.map((i) => i.id))
     setShowManageAccessDialog(true)
   }
 
@@ -215,7 +215,7 @@ export default function SuperAdminDashboardPage() {
       const res = await fetch(`/api/admin/${accessAdmin.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignedInstruments: accessAssignments }),
+        body: JSON.stringify({ assignedEquipment: accessAssignments }),
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       await fetchData()
@@ -235,7 +235,7 @@ export default function SuperAdminDashboardPage() {
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       await fetchData()
       setShowAddAdminDialog(false)
-      setNewAdmin({ email: "", assignedInstruments: [] })
+      setNewAdmin({ email: "", assignedEquipment: [] })
     } catch (err) {
       console.error("Failed to add admin", err)
     }
@@ -526,23 +526,23 @@ export default function SuperAdminDashboardPage() {
                   )}
                 </div>
                   <div className="space-y-2">
-                    <Label>Assign Instruments</Label>
+                    <Label>Assign Equipment</Label>
                     <div className="grid gap-2 max-h-40 overflow-y-auto">
                       {equipmentList.map((eq) => (
                         <div key={eq.id} className="flex items-center gap-2">
                           <Checkbox
                             id={`assign-${eq.id}`}
-                            checked={newAdmin.assignedInstruments.includes(eq.id)}
+                            checked={newAdmin.assignedEquipment.includes(eq.id)}
                             onCheckedChange={(checked) => {
                               if (checked) {
                                 setNewAdmin((prev) => ({
                                   ...prev,
-                                  assignedInstruments: [...prev.assignedInstruments, eq.id],
+                                  assignedEquipment: [...prev.assignedEquipment, eq.id],
                                 }))
                               } else {
                                 setNewAdmin((prev) => ({
                                   ...prev,
-                                  assignedInstruments: prev.assignedInstruments.filter((id) => id !== eq.id),
+                                  assignedEquipment: prev.assignedEquipment.filter((id) => id !== eq.id),
                                 }))
                               }
                             }}

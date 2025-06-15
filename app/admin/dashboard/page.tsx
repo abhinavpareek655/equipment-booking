@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
   const [equipmentStats, setEquipmentStats] = useState<EquipmentInfo[]>([])
   const [bookedSlotsByDate, setBookedSlotsByDate] = useState<{ [equipmentId: string]: { [date: string]: string[] } }>({});
   const [slotLoading, setSlotLoading] = useState(false);
-  const [assignedInstruments, setAssignedInstruments] = useState<Instrument[]>([]);
+  const [assignedEquipment, setAssignedEquipment] = useState<Instrument[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
           uniqueMap.set(b.equipmentId, b.equipment);
         }
       });
-      setAssignedInstruments(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
+      setAssignedEquipment(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
@@ -163,11 +163,11 @@ export default function AdminDashboardPage() {
 }, []);
 
 
-  // Filter bookings based on assigned instruments
+  // Filter bookings based on assigned equipment
   const filteredpendingBookings = pendingBookings.filter(
     (booking) =>
       filterInstrument === "all" ||
-      assignedInstruments.some((instrument) => instrument.id.toString() === booking.equipmentId),
+      assignedEquipment.some((instrument) => instrument.id.toString() === booking.equipmentId),
   )
 
   const handleApprove = (booking: Booking) => {
@@ -230,7 +230,7 @@ export default function AdminDashboardPage() {
           uniqueMap.set(b.equipmentId, b.equipment);
         }
       });
-      setAssignedInstruments(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
+      setAssignedEquipment(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
@@ -504,15 +504,15 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">My Assigned Instruments</CardTitle>
+            <CardTitle className="text-xl">My Assigned Equipment</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{assignedInstruments.length}</div>
-            <p className="text-sm text-gray-500">Instruments you manage</p>
+            <div className="text-3xl font-bold">{assignedEquipment.length}</div>
+            <p className="text-sm text-gray-500">Equipment you manage</p>
           </CardContent>
           <CardFooter>
             <Button variant="outline" size="sm" className="w-full">
-              View Instruments
+              View Equipment
             </Button>
           </CardFooter>
         </Card>
@@ -546,8 +546,8 @@ export default function AdminDashboardPage() {
                           <SelectValue placeholder="Equipment" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Assigned Instruments</SelectItem>
-                          {assignedInstruments.map((instrument) => (
+                          <SelectItem value="all">All Assigned Equipment</SelectItem>
+                          {assignedEquipment.map((instrument) => (
                             <SelectItem key={instrument.id} value={instrument.id.toString()}>
                               {instrument.name}
                             </SelectItem>
@@ -610,7 +610,7 @@ export default function AdminDashboardPage() {
                     ))
                   ) : filteredpendingBookings.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                      No pending requests for your assigned instruments
+                      No pending requests for your assigned equipment
                     </div>
                   ) : (
                     filteredpendingBookings.map((booking) => (
@@ -773,7 +773,7 @@ export default function AdminDashboardPage() {
             <CardContent>
               <div className="space-y-4">
                 {equipmentStats
-                  .filter((equipment) => assignedInstruments.some((instrument) => instrument.id.toString() === equipment.id))
+                  .filter((equipment) => assignedEquipment.some((instrument) => instrument.id.toString() === equipment.id))
                   .map((equipment, index, arr) => (
                     <div key={equipment.id}>
                       <div className="flex justify-between items-center mb-1">

@@ -7,7 +7,7 @@ import User from "@/models/User"
 export async function GET() {
   await dbConnect()
   const admins = await Admin.find({})
-    .populate<{ _id: string; name: string }>("assignedInstruments", "name")
+    .populate<{ _id: string; name: string }>("assignedEquipment", "name")
     .lean()
 
   const result = await Promise.all(
@@ -18,7 +18,7 @@ export async function GET() {
         email: admin.email,
         name: user?.name || "",
         department: user?.department || "",
-        instruments: (admin.assignedInstruments || []).map((eq: any) => ({
+        equipment: (admin.assignedEquipment || []).map((eq: any) => ({
           id: eq._id.toString(),
           name: eq.name,
         })),
@@ -32,7 +32,7 @@ export async function GET() {
 // POST /api/admin
 export async function POST(req: Request) {
   await dbConnect()
-  const { email, assignedInstruments } = await req.json()
+  const { email, assignedEquipment } = await req.json()
 
   if (!email) {
     return NextResponse.json({ error: "Email required" }, { status: 400 })
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
   const admin = await Admin.create({
     email,
-    assignedInstruments: assignedInstruments || [],
+    assignedEquipment: assignedEquipment || [],
   })
 
   if (user.role !== "Super-admin" && user.role !== "Admin") {

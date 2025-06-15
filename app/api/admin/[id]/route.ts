@@ -6,11 +6,11 @@ interface Params { params: { id: string } }
 
 export async function PATCH(req: Request, { params }: Params) {
   await dbConnect()
-  const { assignedInstruments } = await req.json()
+  const { assignedEquipment } = await req.json()
   try {
     const updated = await Admin.findByIdAndUpdate(
       params.id,
-      { assignedInstruments: assignedInstruments || [] },
+      { assignedEquipment: assignedEquipment || [] },
       { new: true }
     )
     if (!updated) {

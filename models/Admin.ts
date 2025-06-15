@@ -3,7 +3,7 @@ import { Schema, model, models, Document } from "mongoose";
 
 interface IAdmin extends Document {
   email: string; // reference to User.email
-  assignedInstruments: string[]; // array of Equipment IDs as string/ObjectId
+  assignedEquipment: string[]; // array of Equipment IDs as string/ObjectId
 }
 
 const AdminSchema = new Schema<IAdmin>(
@@ -16,7 +16,7 @@ const AdminSchema = new Schema<IAdmin>(
       trim: true,
       ref: "User", // references User collection
     },
-    assignedInstruments: [
+    assignedEquipment: [
       {
         type: Schema.Types.ObjectId,
         ref: "Equipment",

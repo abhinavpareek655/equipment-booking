@@ -38,12 +38,12 @@ export async function GET() {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const admin = await Admin.findOne({ email }).lean<{ assignedInstruments: Types.ObjectId[] }>();
+    const admin = await Admin.findOne({ email }).lean<{ assignedEquipment: Types.ObjectId[] }>();
     if (!admin) {
       return NextResponse.json([], { status: 200 });
     }
 
-    const bookingsRaw = await Booking.find({ equipmentId: { $in: admin.assignedInstruments } })
+    const bookingsRaw = await Booking.find({ equipmentId: { $in: admin.assignedEquipment } })
       .populate<{ equipmentId: { _id: Types.ObjectId; name: string } }>("equipmentId", "name")
       .sort({ date: -1 })
       .lean<LeanBooking[]>();
