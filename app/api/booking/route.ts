@@ -3,6 +3,7 @@ import { dbConnect } from '@/lib/db'
 import Booking from '@/models/Booking'
 import Equipment from '@/models/Equipment'
 import User from '@/models/User'
+import { autoCompleteBookings } from '@/lib/bookingUtils'
 import { Types } from 'mongoose'
 
 interface LeanBooking {
@@ -15,12 +16,13 @@ interface LeanBooking {
   supervisor:  string
   department:  string
   purpose:     string
-  status:      'pending' | 'approved' | 'rejected'
+  status:      'pending' | 'approved' | 'rejected' | 'completed'
   createdAt:   Date
 }
 
 export async function GET(req: Request) {
   await dbConnect()
+  await autoCompleteBookings()
 
   try {
     const raw = await Booking.find({})

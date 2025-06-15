@@ -9,7 +9,11 @@ const BookingSchema = new Schema({
   supervisor: { type: String},
   department: { type: String},
   purpose: { type: String},
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'completed'],
+    default: 'pending',
+  },
   createdAt: { type: Date, default: Date.now },
 })
 
