@@ -5,6 +5,7 @@ import Booking from "@/models/Booking";
 import Equipment from "@/models/Equipment";
 import User from "@/models/User";
 import Admin from "@/models/Admin";
+import { autoCompleteBookings } from "@/lib/bookingUtils";
 import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
 
@@ -18,12 +19,13 @@ interface LeanBooking {
   supervisor: string;
   department: string;
   purpose: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
   createdAt: Date;
 }
 
 export async function GET() {
   await dbConnect();
+  await autoCompleteBookings();
 
   const cookieStore = cookies();
   const token = cookieStore.get("token")?.value;

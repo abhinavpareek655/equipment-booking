@@ -3,11 +3,13 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/db";
 import Booking from "@/models/Booking";
+import { autoCompleteBookings } from "@/lib/bookingUtils";
 
 type Params = { params: { id: string } };
 
 export async function GET(request: Request, { params }: Params) {
   await dbConnect();
+  await autoCompleteBookings();
   try {
     const booking = await Booking
       .findById(params.id)
