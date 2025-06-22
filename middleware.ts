@@ -27,6 +27,7 @@ export async function middleware(request: NextRequest) {
       "GET,POST,PUT,DELETE,OPTIONS"
     );
     res.headers.set("Access-Control-Allow-Headers", "*");
+    res.headers.set("Access-Control-Allow-Credentials", "true");
 
     // Role checks for protected APIs
     if (pathname.startsWith("/api/admin")) {
