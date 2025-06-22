@@ -26,6 +26,7 @@ export async function GET(request: Request, { params }: Params) {
 
 export async function PUT(request: Request, { params }: Params) {
   await dbConnect();
+  const Equipment = (await import("@/models/Equipment")).default;
   let data: any;
   try {
     data = await request.json();
@@ -44,6 +45,20 @@ export async function PUT(request: Request, { params }: Params) {
       console.warn(`⚠️  PUT /api/booking/${params.id}: not found`);
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
+
+    if (data.status === "completed") {
+      const eq = await Equipment.findById(updated.equipmentId);
+      if (eq) {
+        eq.totalHours += updated.duration || 0;
+        const total = eq.totalHours || 0;
+        const uptimeRatio = total > 0
+          ? ((total - (eq.maintenanceHours || 0)) / total) * 100
+          : 0;
+        eq.uptime = `${uptimeRatio.toFixed(1)}%`;
+        await eq.save();
+      }
+    }
+
     console.log(`✅ PUT /api/booking/${params.id} success:`, updated);
     return NextResponse.json(updated, { status: 200 });
   } catch (err: any) {
@@ -58,6 +73,7 @@ export async function PUT(request: Request, { params }: Params) {
 export async function PATCH(request: Request, { params }: Params) {
   // same as PUT but with debug logs
   await dbConnect();
+  const Equipment = (await import("@/models/Equipment")).default;
   let data: any;
   try {
     data = await request.json();
@@ -76,6 +92,19 @@ export async function PATCH(request: Request, { params }: Params) {
     if (!updated) {
       console.warn(`⚠️  PATCH /api/booking/${params.id}: not found`);
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (data.status === "completed") {
+      const eq = await Equipment.findById(updated.equipmentId);
+      if (eq) {
+        eq.totalHours += updated.duration || 0;
+        const total = eq.totalHours || 0;
+        const uptimeRatio = total > 0
+          ? ((total - (eq.maintenanceHours || 0)) / total) * 100
+          : 0;
+        eq.uptime = `${uptimeRatio.toFixed(1)}%`;
+        await eq.save();
+      }
     }
     console.log(`✅ PATCH /api/booking/${params.id} success:`, updated);
     return NextResponse.json(updated, { status: 200 });
