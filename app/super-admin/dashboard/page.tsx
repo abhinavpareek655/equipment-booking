@@ -225,10 +225,37 @@ export default function SuperAdminDashboardPage() {
     setShowAssignAdminsDialog(true)
   }
 
-  const handleSaveAdmins = () => {
-    // In a real app, you would send this to your backend
-    console.log("Saving admins for equipment:", selectedEquipment?.id, selectedAdmins)
-    setShowAssignAdminsDialog(false)
+  const handleSaveAdmins = async () => {
+    if (!selectedEquipment) return
+    try {
+      await Promise.all(
+        adminList.map(async (admin) => {
+          const isSelected = selectedAdmins.some((a) => a.id === admin.id)
+          const hasEquipment = admin.equipment.some((eq) => eq.id === selectedEquipment.id)
+          if (isSelected && !hasEquipment) {
+            const assignedEquipment = [...admin.equipment.map((eq) => eq.id), selectedEquipment.id]
+            await fetch(`/api/admin/${admin.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ assignedEquipment }),
+            })
+          } else if (!isSelected && hasEquipment) {
+            const assignedEquipment = admin.equipment
+              .filter((eq) => eq.id !== selectedEquipment.id)
+              .map((eq) => eq.id)
+            await fetch(`/api/admin/${admin.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ assignedEquipment }),
+            })
+          }
+        })
+      )
+      await fetchData()
+      setShowAssignAdminsDialog(false)
+    } catch (err) {
+      console.error("Failed to save admins", err)
+    }
   }
 
   const toggleAdmin = (admin: any) => {
