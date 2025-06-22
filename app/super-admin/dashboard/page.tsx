@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -56,6 +57,7 @@ interface AdminInfo {
 export default function SuperAdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("equipment")
   const { toast } = useToast()
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false)
   const [showEditEquipmentDialog, setShowEditEquipmentDialog] = useState(false)
@@ -90,13 +92,25 @@ export default function SuperAdminDashboardPage() {
   })
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
+  // Ensure only super admins can access this page
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || data.role !== 'Super-admin') {
+          router.replace('/')
+        }
+      })
+      .catch(() => router.replace('/'))
+  }, [])
+
   // Load equipment and admin list from API
   const fetchData = async () => {
     try {
       setLoading(true)
       const [eqRes, adminRes] = await Promise.all([
-        fetch("/api/equipment"),
-        fetch("/api/admin"),
+        fetch("/api/equipment", { credentials: 'include' }),
+        fetch("/api/admin", { credentials: 'include' }),
       ])
       const eqData = await eqRes.json()
       const adminData: AdminInfo[] = await adminRes.json()
@@ -130,7 +144,9 @@ export default function SuperAdminDashboardPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       if (newAdmin.email.trim()) {
-        fetch(`/api/users?search=${encodeURIComponent(newAdmin.email)}`)
+        fetch(`/api/users?search=${encodeURIComponent(newAdmin.email)}`, {
+          credentials: 'include',
+        })
           .then((res) => res.json())
           .then((data) => setUserResults(data))
           .catch(() => setUserResults([]))
@@ -195,6 +211,7 @@ export default function SuperAdminDashboardPage() {
           location: newEquipment.location,
           imageData: newEquipment.imageData,
         }),
+        credentials: 'include',
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       const created = await res.json()
@@ -238,6 +255,7 @@ export default function SuperAdminDashboardPage() {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ assignedEquipment }),
+              credentials: 'include',
             })
           } else if (!isSelected && hasEquipment) {
             const assignedEquipment = admin.equipment
@@ -247,6 +265,7 @@ export default function SuperAdminDashboardPage() {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ assignedEquipment }),
+              credentials: 'include',
             })
           }
         })
@@ -282,6 +301,7 @@ export default function SuperAdminDashboardPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assignedEquipment: accessAssignments }),
+        credentials: 'include',
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       await fetchData()
@@ -297,6 +317,7 @@ export default function SuperAdminDashboardPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newAdmin),
+        credentials: 'include',
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       await fetchData()
@@ -312,7 +333,10 @@ export default function SuperAdminDashboardPage() {
       return
     }
     try {
-      const res = await fetch(`/api/equipment/${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/equipment/${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+      })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
       await fetchData()
     } catch (err) {
