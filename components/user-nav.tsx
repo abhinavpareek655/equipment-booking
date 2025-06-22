@@ -75,7 +75,16 @@ export function UserNav() {
       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
         <Avatar className="h-8 w-8">
         <AvatarImage src="/images/user.png" alt="User" />
-        <AvatarFallback>US</AvatarFallback>
+        <AvatarFallback>
+          {userData?.name
+            ? userData.name
+                .split(" ")
+                .map((n) => n.charAt(0))
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()
+            : "US"}
+        </AvatarFallback>
         </Avatar>
       </Button>
       </DropdownMenuTrigger>
