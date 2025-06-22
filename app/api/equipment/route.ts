@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       category,
       location,
       contact,
-      status: status || "available",
+      status: status || "Available",
       imageUrl: imageData,
     })
     return NextResponse.json(eq, { status: 201 })
