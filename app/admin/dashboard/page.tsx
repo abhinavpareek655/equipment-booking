@@ -91,6 +91,15 @@ export default function AdminDashboardPage() {
   const [assignedEquipment, setAssignedEquipment] = useState<Instrument[]>([]);
 
   const [loading, setLoading] = useState(true);
+  const [showTodaysSchedule, setShowTodaysSchedule] = useState(false);
+
+  const todaysBookings = allBookings.filter(
+    (b) => new Date(b.date).toDateString() === new Date().toDateString(),
+  );
+
+  const bookingsToShow = showTodaysSchedule
+    ? todaysBookings
+    : allBookings.slice(0, 4);
 
   useEffect(() => {
   setLoading(true);
@@ -503,6 +512,7 @@ export default function AdminDashboardPage() {
               className="w-full"
               onClick={() => {
                 setTab("all");
+                setShowTodaysSchedule(true);
                 // Scroll to the Booking Requests card
                 const card = document.getElementById("booking-requests-card");
                 if (card) {
@@ -546,7 +556,16 @@ export default function AdminDashboardPage() {
               <CardDescription>Manage equipment booking requests</CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="pending" className="space-y-4" onValueChange={setTab}>
+              <Tabs
+                defaultValue="pending"
+                className="space-y-4"
+                onValueChange={(val) => {
+                  setTab(val);
+                  if (val !== "all") {
+                    setShowTodaysSchedule(false);
+                  }
+                }}
+              >
                 <TabsList>
                   <TabsTrigger value="pending">pending ({filteredpendingBookings.length})</TabsTrigger>
                   <TabsTrigger value="all">All Bookings</TabsTrigger>
@@ -733,8 +752,13 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {allBookings.slice(0, 4).map((booking) => (
-                    <Card key={booking.id} className="overflow-hidden">
+                  {showTodaysSchedule && bookingsToShow.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No bookings for today
+                    </div>
+                  ) : (
+                    bookingsToShow.map((booking) => (
+                        <Card key={booking.id} className="overflow-hidden">
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <div>
@@ -782,7 +806,8 @@ export default function AdminDashboardPage() {
                         </Button>
                       </CardFooter>
                     </Card>
-                  ))}
+                  ))
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
