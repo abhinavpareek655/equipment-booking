@@ -307,6 +307,19 @@ export default function SuperAdminDashboardPage() {
     }
   }
 
+  const handleDeleteEquipment = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this equipment?")) {
+      return
+    }
+    try {
+      const res = await fetch(`/api/equipment/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error(`Failed: ${res.status}`)
+      await fetchData()
+    } catch (err) {
+      console.error("Failed to delete equipment", err)
+    }
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
@@ -563,7 +576,7 @@ export default function SuperAdminDashboardPage() {
                         >
                           <Users className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteEquipment(equipment.id)}>
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
