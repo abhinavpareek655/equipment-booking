@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox"
 import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 // TypeScript interface matching the Equipment model
 interface Equipment {
@@ -54,6 +55,7 @@ interface AdminInfo {
 
 export default function SuperAdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("equipment")
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false)
   const [showEditEquipmentDialog, setShowEditEquipmentDialog] = useState(false)
@@ -84,7 +86,9 @@ export default function SuperAdminDashboardPage() {
     category: "",
     location: "",
     description: "",
+    imageData: "",
   })
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Load equipment and admin list from API
   const fetchData = async () => {
@@ -104,6 +108,7 @@ export default function SuperAdminDashboardPage() {
         category: eq.category || "",
         location: eq.location || "",
         status: eq.status || "Available",
+        imageUrl: eq.imageUrl,
         admins: adminData
           .filter((ad) => ad.equipment.some((i) => i.id === eq._id))
           .map((ad) => ({ id: ad.id, name: ad.name, email: ad.email })),
@@ -151,6 +156,33 @@ export default function SuperAdminDashboardPage() {
       admin.department.toLowerCase().includes(adminSearchTerm.toLowerCase()),
   )
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 1024 * 1024) {
+      toast({ title: "Image too large", description: "Image must be less than 1MB", variant: "destructive" })
+      e.target.value = ""
+      return
+    }
+    if (file.type !== "image/png") {
+      toast({
+        title: "Invalid format",
+        description:
+          "Please take a screenshot of the image you'd like to upload to automatically convert it to PNG format, or use any online converter to ensure it's in the correct format.",
+        variant: "destructive",
+      })
+      e.target.value = ""
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      setNewEquipment((prev) => ({ ...prev, imageData: result }))
+      setImagePreview(result)
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleAddEquipment = async () => {
     try {
       const res = await fetch("/api/equipment", {
@@ -161,6 +193,7 @@ export default function SuperAdminDashboardPage() {
           department: newEquipment.department,
           category: newEquipment.category,
           location: newEquipment.location,
+          imageData: newEquipment.imageData,
         }),
       })
       if (!res.ok) throw new Error(`Failed: ${res.status}`)
@@ -173,7 +206,9 @@ export default function SuperAdminDashboardPage() {
         category: "",
         location: "",
         description: "",
+        imageData: "",
       })
+      setImagePreview(null)
     } catch (err) {
       console.error("Failed to add equipment", err)
     }
@@ -395,6 +430,13 @@ export default function SuperAdminDashboardPage() {
                       value={newEquipment.description}
                       onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Image (PNG, max 1MB)</Label>
+                    <Input id="image" type="file" accept="image/png" onChange={handleImageChange} />
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Preview" className="max-h-40 mt-2" />
+                    )}
                   </div>
                 </div>
                 <DialogFooter>
