@@ -12,7 +12,7 @@ export async function GET() {
 // POST /api/equipment
 export async function POST(request: Request) {
   await dbConnect()
-  const { name, department, category, location, contact, status, imageUrl } = await request.json()
+  const { name, department, category, location, contact, status, imageData } = await request.json()
 
   if (!name || !department || !location) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       location,
       contact,
       status: status || "available",
-      imageUrl,
+      imageUrl: imageData,
     })
     return NextResponse.json(eq, { status: 201 })
   } catch (err: any) {
