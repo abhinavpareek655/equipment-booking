@@ -83,7 +83,46 @@ export default function MyBookingsPage() {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
-          {filteredBookings.length === 0 ? (
+          {loading ? (
+            [...Array(3)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="h-4 w-32 rounded skeleton-shimmer" />
+                      <div className="h-3 w-24 rounded skeleton-shimmer" />
+                    </div>
+                    <div className="h-4 w-16 rounded skeleton-shimmer" />
+                  </div>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full skeleton-shimmer" />
+                      <div className="h-3 w-24 rounded skeleton-shimmer" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full skeleton-shimmer" />
+                      <div className="h-3 w-24 rounded skeleton-shimmer" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full skeleton-shimmer" />
+                      <div className="h-3 w-24 rounded skeleton-shimmer" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="h-3 w-20 rounded skeleton-shimmer" />
+                    <div className="h-4 w-32 rounded skeleton-shimmer" />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                  <div className="h-8 w-24 rounded skeleton-shimmer" />
+                  <div className="h-8 w-24 rounded skeleton-shimmer" />
+                </CardFooter>
+              </Card>
+            ))
+          ) : filteredBookings.length === 0 ? (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>No bookings found</AlertTitle>
