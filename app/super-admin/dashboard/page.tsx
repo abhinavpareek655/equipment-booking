@@ -75,6 +75,7 @@ export default function SuperAdminDashboardPage() {
   const [accessAssignments, setAccessAssignments] = useState<string[]>([])
 
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([])
+  const [loading, setLoading] = useState(true)
 
   // New equipment form state
   const [newEquipment, setNewEquipment] = useState({
@@ -88,6 +89,7 @@ export default function SuperAdminDashboardPage() {
   // Load equipment and admin list from API
   const fetchData = async () => {
     try {
+      setLoading(true)
       const [eqRes, adminRes] = await Promise.all([
         fetch("/api/equipment"),
         fetch("/api/admin"),
@@ -109,8 +111,10 @@ export default function SuperAdminDashboardPage() {
 
       setAdminList(adminData)
       setEquipmentList(eqList)
+      setLoading(false)
     } catch (err) {
       console.error("Failed to fetch equipment or admins", err)
+      setLoading(false)
     }
   }
 
@@ -417,12 +421,41 @@ export default function SuperAdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEquipment.map((equipment) => (
-                  <TableRow key={equipment.id}>
-                    <TableCell className="font-medium">{equipment.name}</TableCell>
-                    <TableCell>{equipment.department}</TableCell>
-                    <TableCell>{equipment.category}</TableCell>
-                    <TableCell>{equipment.location}</TableCell>
+                {loading
+                  ? [...Array(5)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-16 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <div className="h-8 w-8 skeleton-avatar" />
+                            <div className="h-8 w-8 skeleton-avatar" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="h-6 w-20 ml-auto rounded skeleton-shimmer" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : filteredEquipment.map((equipment) => (
+                    <TableRow key={equipment.id}>
+                      <TableCell className="font-medium">{equipment.name}</TableCell>
+                      <TableCell>{equipment.department}</TableCell>
+                      <TableCell>{equipment.category}</TableCell>
+                      <TableCell>{equipment.location}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -466,9 +499,9 @@ export default function SuperAdminDashboardPage() {
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
+                    </TableRow>
                 ))}
-                {filteredEquipment.length === 0 && (
+                {filteredEquipment.length === 0 && !loading && (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
                       No equipment found.
@@ -581,43 +614,66 @@ export default function SuperAdminDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAdmins.map((admin) => {
-                  const assignedEquipment = equipmentList.filter((equipment) =>
-                    equipment.admins.some((a) => a.id === admin.id),
-                  )
+                {loading
+                  ? [...Array(4)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 skeleton-avatar" />
+                            <div className="h-4 w-24 rounded skeleton-shimmer" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-32 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-32 rounded skeleton-shimmer" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="h-6 w-24 ml-auto rounded skeleton-shimmer" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : filteredAdmins.map((admin) => {
+                      const assignedEquipment = equipmentList.filter((equipment) =>
+                        equipment.admins.some((a) => a.id === admin.id),
+                      )
 
-                  return (
-                    <TableRow key={admin.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center">
-                          <Avatar className="h-8 w-8 mr-2">
-                            <AvatarFallback>{admin.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          {admin.name || admin.email}
-                        </div>
-                      </TableCell>
-                      <TableCell>{admin.email}</TableCell>
-                      <TableCell>{admin.department}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {assignedEquipment.map((equipment) => (
-                            <Badge key={equipment.id} variant="outline" className="mr-1">
-                              {equipment.name}
-                            </Badge>
-                          ))}
-                          {assignedEquipment.length === 0 && (
-                            <span className="text-sm text-gray-500">No equipment assigned</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => openManageAccess(admin)}>
-                          Manage Access
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                      return (
+                        <TableRow key={admin.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center">
+                              <Avatar className="h-8 w-8 mr-2">
+                                <AvatarFallback>{admin.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              {admin.name || admin.email}
+                            </div>
+                          </TableCell>
+                          <TableCell>{admin.email}</TableCell>
+                          <TableCell>{admin.department}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {assignedEquipment.map((equipment) => (
+                                <Badge key={equipment.id} variant="outline" className="mr-1">
+                                  {equipment.name}
+                                </Badge>
+                              ))}
+                              {assignedEquipment.length === 0 && (
+                                <span className="text-sm text-gray-500">No equipment assigned</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm" onClick={() => openManageAccess(admin)}>
+                              Manage Access
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
               </TableBody>
             </Table>
           </div>
