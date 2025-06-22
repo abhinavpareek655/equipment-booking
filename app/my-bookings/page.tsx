@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle, Calendar, Clock, MapPin } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useToast } from "@/hooks/use-toast"
 
 interface Booking {
   id: string
@@ -26,6 +27,21 @@ export default function MyBookingsPage() {
   const [activeTab, setActiveTab] = useState("upcoming")
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
+
+  const handleCancel = async (id: string) => {
+    try {
+      const res = await fetch(`/api/booking/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      if (!res.ok) throw new Error(await res.text())
+      setBookings((prev) => prev.filter((b) => b.id !== id))
+      toast({ title: "Booking cancelled" })
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to cancel booking" })
+    }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -144,13 +160,21 @@ export default function MyBookingsPage() {
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
                   {booking.status === "pending" && (
-                    <Button variant="destructive" size="sm">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleCancel(booking.id)}
+                    >
                       Cancel Request
                     </Button>
                   )}
                   {booking.status === "approved" && (
                     <>
-                      <Button variant="destructive" size="sm">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleCancel(booking.id)}
+                      >
                         Cancel Booking
                       </Button>
                       <Button variant="outline" size="sm">
