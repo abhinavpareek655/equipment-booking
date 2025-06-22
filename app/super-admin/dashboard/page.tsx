@@ -453,7 +453,12 @@ export default function SuperAdminDashboardPage() {
                         <Button variant="outline" size="sm" onClick={() => handleEditEquipment(equipment)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleAssignAdmins(equipment)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAssignAdmins(equipment)}
+                          disabled={equipment.admins.length >= 2}
+                        >
                           <Users className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm">
@@ -533,6 +538,7 @@ export default function SuperAdminDashboardPage() {
                           <Checkbox
                             id={`assign-${eq.id}`}
                             checked={newAdmin.assignedEquipment.includes(eq.id)}
+                            disabled={!newAdmin.assignedEquipment.includes(eq.id) && eq.admins.length >= 2}
                             onCheckedChange={(checked) => {
                               if (checked) {
                                 setNewAdmin((prev) => ({
@@ -823,6 +829,7 @@ export default function SuperAdminDashboardPage() {
                   <Checkbox
                     id={`ma-${eq.id}`}
                     checked={accessAssignments.includes(eq.id)}
+                    disabled={!accessAssignments.includes(eq.id) && eq.admins.length >= 2}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         setAccessAssignments([...accessAssignments, eq.id])
