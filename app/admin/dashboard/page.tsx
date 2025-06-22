@@ -67,6 +67,8 @@ interface EquipmentInfo {
 interface Instrument {
   id: string
   name: string
+  location?: string
+  category?: string
 }
 
 
@@ -95,8 +97,9 @@ export default function AdminDashboardPage() {
   Promise.all([
     fetch("/api/admin/bookings").then((res) => res.json()),
     fetch("/api/equipment").then((res) => res.json()),
+    fetch("/api/admin/me").then((res) => res.json()),
   ])
-    .then(([bookings, equipmentList]: [any[], any[]]) => {
+    .then(([bookings, equipmentList, adminInfo]: [any[], any[], any]) => {
       const mapped = bookings.map((b) => {
         const [startHour] = b.startTime.split(":").map(Number);
         const endHour = startHour + b.duration;
@@ -123,13 +126,14 @@ export default function AdminDashboardPage() {
       setAllBookings(mapped);
       setpendingBookings(mapped.filter((b) => b.status === "pending"));
 
-      const uniqueMap = new Map<string, string>();
-      mapped.forEach((b) => {
-        if (!uniqueMap.has(b.equipmentId)) {
-          uniqueMap.set(b.equipmentId, b.equipment);
-        }
-      });
-      setAssignedEquipment(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
+      setAssignedEquipment(
+        (adminInfo.equipment || []).map((eq: any) => ({
+          id: eq.id,
+          name: eq.name,
+          location: eq.location,
+          category: eq.category,
+        }))
+      );
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
@@ -196,12 +200,14 @@ export default function AdminDashboardPage() {
   const fetchLatestBookingsAndEquipment = async () => {
     setLoading(true);
     try {
-      const [bookingsRes, equipmentRes] = await Promise.all([
+      const [bookingsRes, equipmentRes, adminRes] = await Promise.all([
         fetch("/api/admin/bookings"),
         fetch("/api/equipment"),
+        fetch("/api/admin/me"),
       ]);
       const bookings = await bookingsRes.json();
       const equipmentList = await equipmentRes.json();
+      const adminInfo = await adminRes.json();
 
       const mapped = bookings.map((b: any) => {
         const [startHour] = b.startTime.split(":").map(Number);
@@ -229,13 +235,14 @@ export default function AdminDashboardPage() {
       setAllBookings(mapped);
       setpendingBookings(mapped.filter((b: any) => b.status === "pending"));
 
-      const uniqueMap = new Map<string, string>();
-      mapped.forEach((b: any) => {
-        if (!uniqueMap.has(b.equipmentId)) {
-          uniqueMap.set(b.equipmentId, b.equipment);
-        }
-      });
-      setAssignedEquipment(Array.from(uniqueMap, ([id, name]) => ({ id, name })));
+      setAssignedEquipment(
+        (adminInfo.equipment || []).map((eq: any) => ({
+          id: eq.id,
+          name: eq.name,
+          location: eq.location,
+          category: eq.category,
+        }))
+      );
 
       // Collect all booked slots by equipmentId and date
       const slots: { [equipmentId: string]: { [date: string]: string[] } } = {};
@@ -513,14 +520,21 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xl">My Assigned Equipment</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{assignedEquipment.length}</div>
-            <p className="text-sm text-gray-500">Equipment you manage</p>
+            {assignedEquipment.length === 0 ? (
+              <p className="text-sm text-gray-500">No equipment assigned</p>
+            ) : (
+              <ul className="text-sm space-y-1">
+                {assignedEquipment.map((eq) => (
+                  <li key={eq.id} className="flex justify-between">
+                    <span>{eq.name}</span>
+                    {eq.location && (
+                      <span className="text-gray-500">{eq.location}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" size="sm" className="w-full">
-              View Equipment
-            </Button>
-          </CardFooter>
         </Card>
       </div>
 
