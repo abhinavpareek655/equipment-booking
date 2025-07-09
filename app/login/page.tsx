@@ -116,9 +116,28 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      // Check if response has content before parsing JSON
+      const contentType = res.headers.get("content-type");
+      let data;
+      
+      if (contentType && contentType.includes("application/json")) {
+        const text = await res.text();
+        if (text.trim()) {
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            console.error("JSON parse error:", parseError);
+            throw new Error("Invalid response from server");
+          }
+        } else {
+          throw new Error("Empty response from server");
+        }
+      } else {
+        throw new Error("Invalid response format from server");
+      }
+
       if (!res.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data?.message || "Login failed");
       }
 
       // 3. on success, redirect to home

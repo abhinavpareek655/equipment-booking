@@ -2,6 +2,26 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
+// Simple in-memory rate limiting (use Redis in production)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(identifier: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (record.count >= limit) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 async function getPayload(token: string | undefined) {
   if (!token) return null;
   try {
@@ -18,15 +38,38 @@ async function getPayload(token: string | undefined) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // CORS headers for API routes
+  // Rate limiting for sensitive endpoints
+  if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/register")) {
+    const identifier = request.headers.get("x-forwarded-for") || 
+                      request.headers.get("x-real-ip") || 
+                      "unknown";
+    const isAllowed = checkRateLimit(identifier, 5, 15 * 60 * 1000); // 5 requests per 15 minutes
+    
+    if (!isAllowed) {
+      return NextResponse.json(
+        { message: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+  }
+
+  // CORS headers for API routes with proper configuration
   if (pathname.startsWith("/api")) {
     const res = NextResponse.next();
-    res.headers.set("Access-Control-Allow-Origin", "*");
-    res.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,DELETE,OPTIONS"
-    );
-    res.headers.set("Access-Control-Allow-Headers", "*");
+    
+    // Restrict CORS to specific origins in production
+    const allowedOrigins = process.env.NODE_ENV === "production" 
+      ? [process.env.NEXT_PUBLIC_APP_URL || "https://yourdomain.com"]
+      : ["http://localhost:3000", "http://127.0.0.1:3000"];
+    
+    const origin = request.headers.get("origin");
+    if (origin && allowedOrigins.includes(origin)) {
+      res.headers.set("Access-Control-Allow-Origin", origin);
+    }
+    
+    res.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.headers.set("Access-Control-Allow-Credentials", "true");
 
     // Role checks for protected APIs
     if (pathname.startsWith("/api/admin")) {

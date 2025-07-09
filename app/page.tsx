@@ -116,12 +116,14 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="flex justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-white rounded-full animate-[breathing_4s_ease-in-out_infinite] opacity-20" />
-                  <div className="relative bg-white rounded-full p-6 shadow-lg animate-[breathing_4s_ease-in-out_infinite]">
+                  {/* <div className="absolute inset-0 bg-white rounded-full animate-[breathing_4s_ease-in-out_infinite] opacity-20" /> */}
+                  <div className="relative rounded-full p-6 animate-[breathing_4s_ease-in-out_infinite]">
                     <img
-                      src="/images/dbt-logo.png"
+                      src="/images/curaj-logo-low.png"
                       alt="Department of Biotechnology"
-                      className="w-20 h-20 md:w-24 md:h-24 object-contain"
+                      width="100px"
+                      height={"100px"}
+                      className="w-24 h-24 md:w-24 md:h-24 object-contain"
                     />
                   </div>
                 </div>

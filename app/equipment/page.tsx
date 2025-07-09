@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -27,6 +28,7 @@ export default function EquipmentPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [availability, setAvailability] = useState("all");
+  const router = useRouter();
 
   useEffect(() => {
   setLoading(true)
@@ -147,39 +149,50 @@ export default function EquipmentPage() {
       </div>
     ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredEquipment.map((item) => (
-          <Card key={item.id} className="overflow-hidden">
-            <div className="aspect-video w-full">
-              <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
-            </div>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle>{item.name}</CardTitle>
-                <Badge
-                  variant={
-                    item.availability === "Available"
-                      ? "default"
-                      : item.availability === "Reserved"
-                        ? "secondary"
-                        : "destructive"
-                  }
-                >
-                  {item.availability}
-                </Badge>
-              </div>
-              <CardDescription>{item.category}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">Location: {item.location}</p>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline">View Details</Button>
-              <Link href={`/booking?equipment=${item.id}`} passHref>
-                <Button disabled={item.availability !== "Available"}>Book Now</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-        ))}
+        {filteredEquipment.map((item) => {
+            const isAvailable = item.availability === "Available";
+            return (
+              <Card
+                key={item.id}
+                className={`overflow-hidden ${isAvailable ? "cursor-pointer hover:scale-105 transition-all duration-300" : "opacity-60"}`}
+                onClick={() => {
+                  if (isAvailable) router.push(`/booking?equipment=${item.id}`);
+                }}
+                tabIndex={isAvailable ? 0 : -1}
+                role="button"
+                aria-disabled={!isAvailable}
+              >
+                <div className="aspect-video w-full">
+                  <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
+                </div>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle>{item.name}</CardTitle>
+                    <Badge
+                      variant={
+                        item.availability === "Available"
+                          ? "default"
+                          : item.availability === "Reserved"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {item.availability}
+                    </Badge>
+                  </div>
+                  <CardDescription>{item.category}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">Location: {item.location}</p>
+                </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Link href={`/booking?equipment=${item.id}`} passHref>
+                    <Button disabled={!isAvailable}>Book Now</Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })}
       </div>
     )}
     </div>
