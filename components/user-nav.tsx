@@ -21,6 +21,7 @@ interface UserData {
   email: string;
   role: string;
   department: string;
+  profilePhoto?: string;
 }
 
 export function UserNav() {
@@ -40,9 +41,15 @@ export function UserNav() {
         if (!res.ok) throw new Error("Not authenticated");
         return res.json();
       })
-      .then((data: UserData) => {
+      .then((data) => {
         setIsLoggedIn(true);
-        setUserData(data);
+        setUserData({
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          department: data.department,
+          profilePhoto: data.profilePhoto,
+        });
       })
       .catch(() => {
         setIsLoggedIn(false);
@@ -74,7 +81,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="relative h-8 w-8 rounded-full">
         <Avatar className="h-8 w-8">
-        <AvatarImage src="/images/user.png" alt="User" />
+        <AvatarImage src={userData?.profilePhoto || "/images/user.png"} alt="User" />
         <AvatarFallback>
           {userData?.name
             ? userData.name

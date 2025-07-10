@@ -50,6 +50,7 @@ interface Booking {
   lastUsed?: string | null
   status?: string
   reason?: string
+  userProfilePhoto?: string; // Added for profile photo
 }
 
 
@@ -129,6 +130,7 @@ export default function AdminDashboardPage() {
           status:       b.status,
           userHistory:  b.userHistory ?? [],
           lastUsed:     b.lastUsed ?? null,
+          userProfilePhoto: b.userProfilePhoto, // Add userProfilePhoto
         };
       });
 
@@ -238,6 +240,7 @@ export default function AdminDashboardPage() {
           status:       b.status,
           userHistory:  b.userHistory ?? [],
           lastUsed:     b.lastUsed ?? null,
+          userProfilePhoto: b.userProfilePhoto, // Add userProfilePhoto
         };
       });
 
@@ -666,7 +669,10 @@ export default function AdminDashboardPage() {
                         <CardContent>
                           <div className="grid grid-cols-2 gap-2 mb-2">
                             <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-gray-500" />
+                              <Avatar className="h-8 w-8 mr-2">
+                                <AvatarImage src={booking.userProfilePhoto || "/images/user.png"} alt={booking.user} />
+                                <AvatarFallback>{booking.user?.charAt(0) || "U"}</AvatarFallback>
+                              </Avatar>
                               <div>
                                 <Label className="text-xs text-gray-500">Requested by</Label>
                                 <p className="text-sm">{booking.user}</p>
@@ -783,7 +789,10 @@ export default function AdminDashboardPage() {
                       <CardContent>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-500" />
+                            <Avatar className="h-8 w-8 mr-2">
+                              <AvatarImage src={booking.userProfilePhoto || "/images/user.png"} alt={booking.user} />
+                              <AvatarFallback>{booking.user?.charAt(0) || "U"}</AvatarFallback>
+                            </Avatar>
                             <div>
                               <Label className="text-xs text-gray-500">Requested by</Label>
                               <p className="text-sm">{booking.user}</p>
@@ -915,15 +924,8 @@ export default function AdminDashboardPage() {
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select start time" />
                 </SelectTrigger>
-                {loading ? (
-                  <div className="space-y-2 p-2">
-                    {allSlots.map((_, i) => (
-                      <div key={i} className="h-8 rounded bg-gray-200 animate-pulse" />
-                    ))}
-                  </div>
-                ) : (
-                <SelectContent>
-                  {allSlots.map((slot) => {
+                  <SelectContent>
+                    {allSlots.map((slot) => {
                     // build the slot’s DateTime
                     const slotDateTime = parse(
                       `${format(approvalDate || new Date(), "yyyy-MM-dd")} ${slot}`,

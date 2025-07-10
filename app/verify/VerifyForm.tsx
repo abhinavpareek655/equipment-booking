@@ -28,6 +28,8 @@ export default function VerifyForm({ email }: { email: string }) {
   const [success, setSuccess] = useState(false)
   const [timeLeft, setTimeLeft] = useState(600)
   const [canResend, setCanResend] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState("");
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -115,8 +117,36 @@ export default function VerifyForm({ email }: { email: string }) {
         throw new Error(message || "OTP verification failed")
       }
 
-      console.log("Cookies after verify:", document.cookie)
-
+      // After successful verification, upload the photo from localStorage
+      setUploadingPhoto(true);
+      setPhotoUploadError("");
+      const base64 = localStorage.getItem("pendingProfilePhoto");
+      if (base64) {
+        // Convert base64 to File
+        const arr = base64.split(",");
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        const bstr = atob(arr[1] || "");
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+        const file = new File([u8arr], "profile-photo.jpg", { type: mime });
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("profilePhoto", file);
+        const uploadRes = await fetch("/api/auth/upload-profile-photo", {
+          method: "POST",
+          body: formData,
+        });
+        if (!uploadRes.ok) {
+          const data = await uploadRes.json();
+          setPhotoUploadError(data.message || "Failed to upload profile photo.");
+          setUploadingPhoto(false);
+          setIsVerifying(false);
+          return;
+        }
+        localStorage.removeItem("pendingProfilePhoto");
+      }
       setSuccess(true)
       setTimeout(() => {
         router.push("/")
@@ -126,6 +156,7 @@ export default function VerifyForm({ email }: { email: string }) {
       setError(err.message || "Verification failed. Please try again.")
     } finally {
       setIsVerifying(false)
+      setUploadingPhoto(false);
     }
   }
 
@@ -212,6 +243,15 @@ export default function VerifyForm({ email }: { email: string }) {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
+          )}
+          {photoUploadError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{photoUploadError}</AlertDescription>
+            </Alert>
+          )}
+          {uploadingPhoto && (
+            <div className="text-center text-blue-600 text-sm">Uploading profile photo...</div>
           )}
 
           <div className="text-center space-y-2">

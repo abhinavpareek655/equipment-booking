@@ -56,8 +56,9 @@ export async function GET() {
 
     const bookings = await Promise.all(
       bookingsRaw.map(async (b) => {
-        const user = await User.findOne({ email: b.userEmail }, "name").lean<{
+        const user = await User.findOne({ email: b.userEmail }, "name profilePhoto").lean<{
           name: string;
+          profilePhoto?: string;
         }>();
 
         const historyRaw = await Booking.find({
@@ -100,6 +101,7 @@ export async function GET() {
           equipment: b.equipmentId.name,
           equipmentId: (b.equipmentId as any)._id?.toString() ?? '',
           userName: user?.name ?? "Unknown",
+          userProfilePhoto: user?.profilePhoto ?? null,
           userHistory,
           lastUsed,
         };

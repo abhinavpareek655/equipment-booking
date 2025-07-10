@@ -1,0 +1,175 @@
+* [33m7955389[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Adding profile photo in registration flow
+* [33m8bfcc96[m Some ui changes to equipments page
+[31m|[m * [33m83ac1a1[m[33m ([m[1;31morigin/codex/fix-middleware-issue-for-super-admin[m[33m)[m Fix super-admin middleware and add credentialed fetch
+[31m|[m[31m/[m  
+* [33m0704c83[m Enabling the middleware
+* [33m783efe3[m Dissabling the middleware
+* [33me7122ef[m Updating packages file
+*   [33m7319686[m Merge pull request #31 from abhinavpareek655/codex/fix-casing-conflicts-in-status-values
+[33m|[m[34m\[m  
+[33m|[m * [33m7f341b2[m[33m ([m[1;31morigin/codex/fix-casing-conflicts-in-status-values[m[33m)[m fix: unify equipment status casing
+* [34m|[m   [33mcced767[m Merge pull request #30 from abhinavpareek655/codex/add-delete-functionality-for-equipment
+[34m|[m[36m\[m [34m\[m  
+[34m|[m [36m|[m[34m/[m  
+[34m|[m[34m/[m[36m|[m   
+[34m|[m * [33m5a47e5f[m[33m ([m[1;31morigin/codex/add-delete-functionality-for-equipment[m[33m)[m feat: enable equipment deletion in super admin
+[34m|[m[34m/[m  
+*   [33mf78b2b8[m Merge pull request #29 from abhinavpareek655/codex/write-role-based-access-middleware
+[1;31m|[m[1;32m\[m  
+[1;31m|[m * [33m72e0d39[m[33m ([m[1;31morigin/codex/write-role-based-access-middleware[m[33m)[m Add role-based middleware with JWT checks
+* [1;32m|[m   [33m7bd6207[m Merge pull request #28 from abhinavpareek655/codex/fix-save-administrators-button-functionality
+[1;32m|[m[1;34m\[m [1;32m\[m  
+[1;32m|[m [1;34m|[m[1;32m/[m  
+[1;32m|[m[1;32m/[m[1;34m|[m   
+[1;32m|[m * [33m8192df2[m[33m ([m[1;31morigin/codex/fix-save-administrators-button-functionality[m[33m)[m fix save admins
+* [1;34m|[m   [33m4e2a2fd[m Merge pull request #27 from abhinavpareek655/codex/add-function-to-view-schedule-button
+[1;34m|[m[1;36m\[m [1;34m\[m  
+[1;34m|[m [1;36m|[m[1;34m/[m  
+[1;34m|[m[1;34m/[m[1;36m|[m   
+[1;34m|[m * [33m64578dd[m[33m ([m[1;31morigin/codex/add-function-to-view-schedule-button[m[33m)[m feat(admin): show todays schedule
+[1;34m|[m[1;34m/[m  
+*   [33m84ad494[m Merge pull request #26 from abhinavpareek655/codex/update-readme-for-project-description
+[31m|[m[32m\[m  
+[31m|[m * [33m767430d[m[33m ([m[1;31morigin/codex/update-readme-for-project-description[m[33m)[m docs: improve project readme
+* [32m|[m   [33mbc3c8dc[m Merge pull request #25 from abhinavpareek655/codex/add-skeleton-loading-screen-to-bookings-page
+[33m|[m[34m\[m [32m\[m  
+[33m|[m * [32m|[m [33m1eeaf7d[m[33m ([m[1;31morigin/codex/add-skeleton-loading-screen-to-bookings-page[m[33m)[m feat: add loading skeletons on my bookings page
+[33m|[m [32m|[m[32m/[m  
+* [32m|[m   [33m69df27b[m Merge pull request #24 from abhinavpareek655/codex/add-cancel-functionality-to-booking-button
+[32m|[m[36m\[m [32m\[m  
+[32m|[m [36m|[m[32m/[m  
+[32m|[m[32m/[m[36m|[m   
+[32m|[m * [33mfa615f1[m[33m ([m[1;31morigin/codex/add-cancel-functionality-to-booking-button[m[33m)[m Add booking cancellation logic
+[32m|[m[32m/[m  
+*   [33m47dc8fd[m Merge pull request #23 from abhinavpareek655/codex/fix-assigned-equipment-display
+[1;31m|[m[1;32m\[m  
+[1;31m|[m * [33mfdaf03a[m[33m ([m[1;31morigin/codex/fix-assigned-equipment-display[m[33m)[m feat(admin): show assigned equipment list
+* [1;32m|[m   [33m2763c56[m Merge pull request #22 from abhinavpareek655/codex/add-image-upload-feature-for-equipment
+[1;33m|[m[1;34m\[m [1;32m\[m  
+[1;33m|[m * [1;32m|[m [33mfe30b16[m[33m ([m[1;31morigin/codex/add-image-upload-feature-for-equipment[m[33m)[m Add equipment image upload support
+[1;33m|[m [1;32m|[m[1;32m/[m  
+* [1;32m|[m   [33mcfe76fe[m Merge pull request #21 from abhinavpareek655/codex/show-user-initials-as-avatar-in-user-nav
+[1;35m|[m[1;36m\[m [1;32m\[m  
+[1;35m|[m * [1;32m|[m [33m6362482[m[33m ([m[1;31morigin/codex/show-user-initials-as-avatar-in-user-nav[m[33m)[m Show user initials in avatar
+[1;35m|[m [1;32m|[m[1;32m/[m  
+* [1;32m|[m   [33md0a6fd2[m Merge pull request #20 from abhinavpareek655/codex/add-skeleton-loading-screen-in-super-admin-page
+[31m|[m[32m\[m [1;32m\[m  
+[31m|[m * [1;32m|[m [33m5590104[m[33m ([m[1;31morigin/codex/add-skeleton-loading-screen-in-super-admin-page[m[33m)[m Add loading skeletons for super admin dashboard
+[31m|[m [1;32m|[m[1;32m/[m  
+* [1;32m|[m   [33mc8b379e[m Merge pull request #19 from abhinavpareek655/codex/add-admin-limit-for-equipment
+[33m|[m[34m\[m [1;32m\[m  
+[33m|[m * [1;32m|[m [33m305f55f[m[33m ([m[1;31morigin/codex/add-admin-limit-for-equipment[m[33m)[m Limit equipment admins
+[33m|[m [1;32m|[m[1;32m/[m  
+* [1;32m|[m   [33ma85ab87[m Merge pull request #18 from abhinavpareek655/codex/add-logic-to-update-totalhours-and-uptime
+[1;32m|[m[36m\[m [1;32m\[m  
+[1;32m|[m [36m|[m[1;32m/[m  
+[1;32m|[m[1;32m/[m[36m|[m   
+[1;32m|[m * [33mc6433dc[m[33m ([m[1;31morigin/codex/add-logic-to-update-totalhours-and-uptime[m[33m)[m update equipment stats on booking completion
+[1;32m|[m[1;32m/[m  
+* [33m7487a13[m Updating conflicts
+*   [33md322941[m Merge branch 'main' of https://github.com/abhinavpareek655/equipment-booking
+[1;31m|[m[1;32m\[m  
+[1;31m|[m *   [33m1f6ae5e[m Merge pull request #17 from abhinavpareek655/codex/fix-my-bookings-page-to-fetch-details
+[1;31m|[m [1;33m|[m[1;34m\[m  
+[1;31m|[m [1;33m|[m * [33m8fb0f2f[m[33m ([m[1;31morigin/codex/fix-my-bookings-page-to-fetch-details[m[33m)[m feat: load actual user bookings
+[1;31m|[m * [1;34m|[m   [33m937dc5e[m Merge pull request #16 from abhinavpareek655/codex/fix-user-history-in-bookings-section
+[1;31m|[m [1;35m|[m[1;36m\[m [1;34m\[m  
+[1;31m|[m [1;35m|[m * [1;34m|[m [33m04e9492[m[33m ([m[1;31morigin/codex/fix-user-history-in-bookings-section[m[33m)[m feat(admin): display user booking history and priority
+[1;31m|[m [1;35m|[m [1;34m|[m[1;34m/[m  
+* [1;35m|[m [1;34m|[m [33m234fa87[m Updating pnpm packages list
+* [1;35m|[m [1;34m|[m [33m5d4830d[m Merge branch 'main' of https://github.com/abhinavpareek655/equipment-booking
+[31m|[m[1;35m\[m[1;35m|[m [1;34m|[m 
+[31m|[m * [1;34m|[m   [33m0596a1b[m Merge pull request #15 from abhinavpareek655/codex/add-automatic-status-change-for-completed-bookings
+[31m|[m [1;34m|[m[34m\[m [1;34m\[m  
+[31m|[m [1;34m|[m [34m|[m[1;34m/[m  
+[31m|[m [1;34m|[m[1;34m/[m[34m|[m   
+[31m|[m [1;34m|[m * [33m4f3885d[m[33m ([m[1;31morigin/codex/add-automatic-status-change-for-completed-bookings[m[33m)[m feat: auto complete bookings
+[31m|[m [1;34m|[m[1;34m/[m  
+* [1;34m/[m [33mff8541b[m Rename instruments to equipment to remove any confusion
+[1;34m|[m[1;34m/[m  
+[1;34m|[m * [33m02667f4[m[33m ([m[1;31morigin/codex/disable-booked-time-slots-on-approval[m[33m)[m filter booked slots by approval
+[1;34m|[m[1;34m/[m  
+* [33m0ad5fb5[m Adding the actual equipments
+*   [33mc7d1db1[m Merge pull request #13 from abhinavpareek655/codex/fix-user-history-functionality-and-color-coding
+[36m|[m[1;31m\[m  
+[36m|[m * [33m7ef49a7[m[33m ([m[1;31morigin/codex/fix-user-history-functionality-and-color-coding[m[33m)[m feat(admin): show least recent user history
+[36m|[m[36m/[m  
+*   [33m7945b73[m Merge pull request #12 from abhinavpareek655/codex/implement-api-for-admin-equipment-bookings
+[1;32m|[m[1;33m\[m  
+[1;32m|[m * [33m4b8c378[m[33m ([m[1;31morigin/codex/implement-api-for-admin-equipment-bookings[m[33m)[m Add admin bookings API and update dashboard
+[1;32m|[m[1;32m/[m  
+*   [33mac8b9a1[m Merge pull request #11 from abhinavpareek655/codex/implement-manage-access-and-add-admin-dialogues
+[1;34m|[m[1;35m\[m  
+[1;34m|[m * [33m297a005[m[33m ([m[1;31morigin/codex/implement-manage-access-and-add-admin-dialogues[m[33m)[m Add user search and admin access management
+[1;34m|[m[1;34m/[m  
+*   [33m7a7cf18[m Update admin route.ts
+[1;36m|[m[31m\[m  
+[1;36m|[m *   [33mb642a10[m Merge pull request #10 from abhinavpareek655/codex/add-search-tab,-admin-button,-and-fetch-actual-admin-data
+[1;36m|[m [32m|[m[33m\[m  
+[1;36m|[m [32m|[m * [33md9f0722[m[33m ([m[1;31morigin/codex/add-search-tab,-admin-button,-and-fetch-actual-admin-data[m[33m)[m Add admin management features
+[1;36m|[m [32m|[m[32m/[m  
+* [32m/[m [33m2ed9d06[m Add admin route.ts
+[32m|[m[32m/[m  
+*   [33m9497037[m Merge pull request #9 from abhinavpareek655/codex/remove-mock-data-and-integrate-equipment-api
+[34m|[m[35m\[m  
+[34m|[m * [33mb2ea5d2[m[33m ([m[1;31morigin/codex/remove-mock-data-and-integrate-equipment-api[m[33m)[m Fetch equipment data on super admin dashboard
+[34m|[m[34m/[m  
+*   [33m212832a[m Merge pull request #8 from abhinavpareek655/codex/rename-instrument-to-equipment-in-dashboard
+[36m|[m[1;31m\[m  
+[36m|[m * [33m1d44a16[m[33m ([m[1;31morigin/codex/rename-instrument-to-equipment-in-dashboard[m[33m)[m refactor: rename instruments to equipment
+* [1;31m|[m   [33mb8ec6b4[m Merge pull request #7 from abhinavpareek655/codex/fix-time-slot-disabling-for-booked-equipment
+[1;32m|[m[1;33m\[m [1;31m\[m  
+[1;32m|[m * [1;31m|[m [33mdb1e708[m[33m ([m[1;31morigin/codex/fix-time-slot-disabling-for-booked-equipment[m[33m)[m fix admin slot disabling
+[1;32m|[m [1;31m|[m[1;31m/[m  
+* [1;31m|[m   [33meb31d17[m Merge pull request #6 from abhinavpareek655/codex/edit-readme.md-and-update-project-files
+[1;31m|[m[1;35m\[m [1;31m\[m  
+[1;31m|[m [1;35m|[m[1;31m/[m  
+[1;31m|[m[1;31m/[m[1;35m|[m   
+[1;31m|[m * [33ma7ffd18[m[33m ([m[1;31morigin/codex/edit-readme.md-and-update-project-files[m[33m)[m docs: update API docs and config
+[1;31m|[m[1;31m/[m  
+* [33mb6237ab[m removing attachements from the email
+* [33m96bf812[m fixing ui
+* [33m75215b9[m fixing approval booking slots race condition
+* [33m7535b03[m fixing booking conflict issue
+* [33m1116376[m updating admin page
+* [33m17eed56[m fixing admin page booking requests loading screen, pending requests, requested by name etc.
+* [33mb0a8cca[m user signup and login done
+* [33mf863f24[m fixing avatar and login button issue on homepage
+* [33m0d3d830[m adding login
+* [33m1b73e31[m Update VerifyForm.tsx
+* [33m4689602[m Update page.tsx
+* [33m2b07dcd[m Update VerifyForm.tsx
+*   [33mdab784a[m Merge pull request #5 from abhinavpareek655/side
+[1;36m|[m[31m\[m  
+[1;36m|[m * [33m1997858[m[33m ([m[1;31morigin/side[m[33m)[m updating
+* [31m|[m [33m6725bcf[m Update page.tsx
+* [31m|[m [33ma145c15[m Update page.tsx
+* [31m|[m [33m527198d[m Update page.tsx
+* [31m|[m [33m6cae707[m Update page.tsx
+* [31m|[m [33mf84e893[m Update page.tsx
+* [31m|[m [33m63fd940[m Merge pull request #4 from abhinavpareek655/side
+[32m|[m[31m\[m[31m|[m 
+[32m|[m * [33me1d2b47[m fixing the userNev
+* [33m|[m [33m6d2e4f4[m Merge pull request #3 from abhinavpareek655/side
+[34m|[m[33m\[m[33m|[m 
+[34m|[m * [33m0c775e0[m verification completed
+[34m|[m * [33md9228e0[m adding verification page
+[34m|[m * [33m4773b1c[m adding register api
+[34m|[m * [33maeeafea[m registration UI
+* [35m|[m [33me4ab98a[m Merge pull request #2 from abhinavpareek655/side
+[36m|[m[35m\[m[35m|[m 
+[36m|[m * [33m638d6e3[m adding logos
+* [1;31m|[m [33m8249dd8[m Merge pull request #1 from abhinavpareek655/side
+[1;32m|[m[1;31m\[m[1;31m|[m 
+[1;32m|[m * [33m4dcc2e0[m search functionality is now working
+[1;32m|[m * [33mda8c977[m search functionality is now working
+[1;32m|[m * [33m73610f9[m adding loading screen to the equipments page (skeleton screen)
+[1;32m|[m[1;32m/[m  
+* [33m1999ba8[m UI fixes
+* [33ma390ab2[m some ui changes
+* [33m49fdcc4[m fixing equipment name issue on admin side and updating the booking status
+* [33m736d395[m New name
+* [33m63e2cc1[m Ui changes
+* [33m913a8bb[m adding the admin logic
+* [33mb97c29c[m integrating backend with frontend
+* [33ma35c51f[m first commit

@@ -3,6 +3,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { dbConnect } from "@/lib/db";
+import User from "@/models/User";
 
 export async function GET() {
   // 1. Read the token from the HTTP-only "token" cookie
@@ -15,8 +17,22 @@ export async function GET() {
   try {
     // 2. Verify the token and extract payload
     const payload = jwt.verify(token, process.env.JWT_SECRET!);
-    // 3. Return the payload (e.g., { userId, name, email, role, department })
-    return NextResponse.json(payload, { status: 200 });
+    // 3. Fetch user from DB to get profilePhoto
+    await dbConnect();
+    const user = await User.findById(payload.userId).lean();
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+    // Return user info including profilePhoto
+    return NextResponse.json({
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department,
+      profilePhoto: user.profilePhoto,
+      supervisor: user.supervisor,
+    }, { status: 200 });
   } catch {
     return NextResponse.json({ message: "Invalid token" }, { status: 401 });
   }

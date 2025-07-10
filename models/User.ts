@@ -8,6 +8,7 @@ interface IUser extends Document {
   role: string;
   passwordHash: string;
   supervisor?: string;
+  profilePhoto?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUser>(
     role:        { type: String, required: true, trim: true },
     passwordHash:{ type: String, required: true },
     supervisor:  { type: String, trim: true, default: null },
+    profilePhoto: { type: String, trim: true, default: null },
   },
   { timestamps: true }
 );
