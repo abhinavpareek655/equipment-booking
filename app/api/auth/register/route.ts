@@ -6,6 +6,7 @@ import VerificationCode from "@/models/VerificationCode";
 import User from "@/models/User";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { isAllowedFacultyEmail } from "@/lib/allowed-faculty";
 
 type RegisterRequest = {
   name?: string;
@@ -34,6 +35,14 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { success: false, message: "Name, email, password, role, and department are required." },
       { status: 400 }
+    );
+  }
+
+  // Check if email is in allowed faculty list
+  if (!isAllowedFacultyEmail(email)) {
+    return NextResponse.json(
+      { success: false, message: "Only authorized faculty members can register. Please contact admin if you believe this is an error." },
+      { status: 403 }
     );
   }
 

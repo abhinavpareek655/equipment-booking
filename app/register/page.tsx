@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AlertCircle, EyeOff, Eye, CheckCircle, User as UserIcon} from "lucide-react"
 import { useDropzone } from 'react-dropzone';
 import * as faceapi from 'face-api.js';
+import { isAllowedFacultyEmail } from "@/lib/allowed-faculty";
 
 type FormState = {
   email: string
@@ -94,6 +95,10 @@ export default function RegisterPage() {
         const emailPattern = /^[^\s@]+@curaj\.ac\.in$/i
         if (!emailPattern.test(value as string)) {
           return "Please use a valid university email address (@curaj.ac.in)"
+        }
+        // Check if email is in allowed faculty list
+        if (!isAllowedFacultyEmail(value as string)) {
+          return "Only authorized faculty members can register. Please contact admin if you believe this is an error."
         }
         return null
 
