@@ -53,7 +53,7 @@ export default function MyBookingsPage() {
           const endHour = startHour + b.duration
           const status =
             b.status === "approved" && new Date(b.date) < new Date()
-              ? "Completed"
+              ? "completed"
               : b.status
           return {
             id: b.id,
@@ -79,7 +79,7 @@ export default function MyBookingsPage() {
     if (activeTab === "upcoming") {
       return booking.status === "approved" || booking.status === "pending"
     } else if (activeTab === "completed") {
-      return booking.status === "Completed"
+      return booking.status === "completed"
     } else if (activeTab === "rejected") {
       return booking.status === "rejected"
     }
@@ -94,7 +94,7 @@ export default function MyBookingsPage() {
         <TabsList>
           <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="rejected">rejected</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
           <TabsTrigger value="all">All Bookings</TabsTrigger>
         </TabsList>
 
@@ -156,12 +156,12 @@ export default function MyBookingsPage() {
                     <Badge
                       variant={
                         booking.status === "approved"
-                          ? "default"
+                          ? "blue"
                           : booking.status === "pending"
-                            ? "secondary"
-                            : booking.status === "Completed"
-                              ? "outline"
-                              : "destructive"
+                            ? "yellow"
+                            : booking.status === "completed"
+                              ? "green"
+                              : "red"
                       }
                     >
                       {booking.status}

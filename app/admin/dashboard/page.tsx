@@ -752,7 +752,7 @@ export default function AdminDashboardPage() {
                           <SelectItem value="pending">pending</SelectItem>
                           <SelectItem value="approved">approved</SelectItem>
                           <SelectItem value="rejected">rejected</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="completed">completed</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -777,7 +777,7 @@ export default function AdminDashboardPage() {
                                 ? "secondary"
                                 : booking.status === "approved" || "approved"
                                   ? "default"
-                                  : booking.status === "Completed"
+                                  : booking.status === "completed"
                                     ? "outline"
                                     : "destructive"
                             }
@@ -951,7 +951,6 @@ export default function AdminDashboardPage() {
                     )
                   })}
                 </SelectContent>
-                )}
               </Select>
               </div>
 
@@ -1082,7 +1081,7 @@ export default function AdminDashboardPage() {
                     <TableCell>
                       <Badge
                         variant={
-                          history.status === "Completed"
+                          history.status === "completed"
                             ? "default"
                             : history.status === "Cancelled"
                               ? "destructive"
