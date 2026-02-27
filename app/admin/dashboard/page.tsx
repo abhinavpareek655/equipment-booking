@@ -663,7 +663,7 @@ export default function AdminDashboardPage() {
                               <CardTitle className="text-lg">{booking.equipment}</CardTitle>
                               <CardDescription>Request #{booking.id}</CardDescription>
                             </div>
-                            <Badge variant="secondary">{booking.status}</Badge>
+                            <Badge variant={booking.status === "approved" ? "blue" : booking.status === "completed" ? "green" : "yellow"}>{booking.status}</Badge>
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -727,10 +727,10 @@ export default function AdminDashboardPage() {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-end gap-2">
-                          <Button variant="destructive" size="sm" onClick={() => handleReject(booking)}>
+                          <Button variant="red" size="sm" onClick={() => handleReject(booking)}>
                             <XCircle className="mr-1 h-4 w-4" /> Reject
                           </Button>
-                          <Button size="sm" onClick={() => handleApprove(booking)}>
+                          <Button variant="green" size="sm" onClick={() => handleApprove(booking)}>
                             <CheckCircle className="mr-1 h-4 w-4" /> Approve
                           </Button>
                         </CardFooter>
@@ -774,12 +774,12 @@ export default function AdminDashboardPage() {
                           <Badge
                             variant={
                               booking.status === "pending"
-                                ? "secondary"
-                                : booking.status === "approved" || "approved"
-                                  ? "default"
+                                ? "yellow"
+                                : booking.status === "approved"
+                                  ? "blue"
                                   : booking.status === "completed"
-                                    ? "outline"
-                                    : "destructive"
+                                    ? "green"
+                                    : "red"
                             }
                           >
                             {booking.status}
@@ -1082,10 +1082,10 @@ export default function AdminDashboardPage() {
                       <Badge
                         variant={
                           history.status === "completed"
-                            ? "default"
-                            : history.status === "Cancelled"
+                            ? "green"
+                            : history.status === "canceled"
                               ? "destructive"
-                              : "secondary"
+                              : "red"
                         }
                       >
                         {history.status}

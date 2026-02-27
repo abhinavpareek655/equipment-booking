@@ -32,11 +32,15 @@ export default function MyBookingsPage() {
   const handleCancel = async (id: string) => {
     try {
       const res = await fetch(`/api/booking/${id}`, {
-        method: "DELETE",
+        method: "PATCH",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "canceled" }),
       })
       if (!res.ok) throw new Error(await res.text())
-      setBookings((prev) => prev.filter((b) => b.id !== id))
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "canceled" } : b))
+      )
       toast({ title: "Booking cancelled" })
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to cancel booking" })
