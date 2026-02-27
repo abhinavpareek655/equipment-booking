@@ -26,6 +26,7 @@ type FormState = {
   showPassword: boolean
   confirmPassword: string
   supervisor?: string
+  supervisorEmail?: string
 }
 
 type Errors = Partial<Record<keyof FormState, string>>
@@ -39,6 +40,7 @@ const initialState: FormState = {
   showPassword: false,
   confirmPassword: "",
   supervisor: "",
+  supervisorEmail: "",
 }
 
 const departments = [
@@ -117,6 +119,16 @@ export default function RegisterPage() {
       case "confirmPassword":
         if (!value) return "Please confirm your password"
         if (value !== form.password) return "Passwords do not match"
+        return null
+
+      case "supervisorEmail":
+        // supervisorEmail is optional, but if provided, must be valid email format
+        if (value && typeof value === "string") {
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          if (!emailPattern.test(value)) {
+            return "Please enter a valid email address"
+          }
+        }
         return null
 
       default:
@@ -334,6 +346,8 @@ export default function RegisterPage() {
           password: form.password,
           role: form.role,               // ✅ add this
           department: form.department,   // ✅ add this
+          supervisor: form.supervisor,   // ✅ add this
+          supervisorEmail: form.supervisorEmail, // ✅ add this
         }),
       });
 
@@ -348,7 +362,8 @@ export default function RegisterPage() {
       }
 
       if (!response.ok) {
-        throw new Error(`❌ HTTP error! status: ${response.status}`);
+        const errorMessage = parsedData?.message || `HTTP error! status: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       toast({
@@ -365,9 +380,10 @@ export default function RegisterPage() {
       });
     } catch (error) {
       console.error("🚨 Registration error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Registration Failed",
-        description: "An error occurred while creating your account. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -663,6 +679,26 @@ export default function RegisterPage() {
                   {errors.supervisor}
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supervisorEmail">Supervisor/PI Email (if applicable) *</Label>
+              <Input 
+              id="supervisorEmail" 
+              type="email"
+              placeholder="supervisor@institution.ac.in"
+              value={form.supervisorEmail}
+              onChange={(e) => handleChange("supervisorEmail", e.target.value)}
+              onBlur={() => handleBlur("supervisorEmail")}
+              className={errors.supervisorEmail ? "border-red-500" : ""}
+              />
+              {errors.supervisorEmail && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.supervisorEmail}
+                </p>
+              )}
+              <p className="text-xs text-gray-500">Your supervisor must be an admin user in the system. A verification code will be sent to their email for account approval.</p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">

@@ -22,6 +22,7 @@ export default function VerifyForm({ email }: { email: string }) {
   const router = useRouter()
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
+  const [supervisorOtp, setSupervisorOtp] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState("")
@@ -30,8 +31,10 @@ export default function VerifyForm({ email }: { email: string }) {
   const [canResend, setCanResend] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUploadError, setPhotoUploadError] = useState("");
+  const [activeTab, setActiveTab] = useState<'user' | 'supervisor'>('user');
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const supervisorInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // Timer countdown
   useEffect(() => {
@@ -51,34 +54,47 @@ export default function VerifyForm({ email }: { email: string }) {
   }
 
   // Handle OTP input change
-  const handleOtpChange = (index: number, value: string) => {
+  const handleOtpChange = (index: number, value: string, type: 'user' | 'supervisor' = 'user') => {
     if (value.length > 1) return
 
-    const newOtp = [...otp]
+    const setState = type === 'user' ? setOtp : setSupervisorOtp;
+    const currentRefs = type === 'user' ? inputRefs : supervisorInputRefs;
+    const currentOtp = type === 'user' ? otp : supervisorOtp;
+
+    const newOtp = [...currentOtp]
     newOtp[index] = value
-    setOtp(newOtp)
+    setState(newOtp)
     setError("")
 
     // Auto-focus next input
     if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
+      currentRefs.current[index + 1]?.focus()
     }
 
     // Auto-submit when all fields are filled
     if (newOtp.every((digit) => digit !== "") && newOtp.join("").length === 6) {
-      handleVerify(newOtp.join(""))
+      if (type === 'user') {
+        // If in user tab and all fields filled, move to supervisor tab (if needed)
+        setActiveTab('supervisor')
+      } else {
+        // If supervisor OTP is complete, verify both
+        handleVerify(otp.join(""), newOtp.join(""))
+      }
     }
   }
 
   // Handle backspace
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
+  const handleKeyDown = (index: number, e: React.KeyboardEvent, type: 'user' | 'supervisor' = 'user') => {
+    const currentOtp = type === 'user' ? otp : supervisorOtp;
+    const currentRefs = type === 'user' ? inputRefs : supervisorInputRefs;
+
+    if (e.key === "Backspace" && !currentOtp[index] && index > 0) {
+      currentRefs.current[index - 1]?.focus()
     }
   }
 
   // Handle paste
-  const handlePaste = (e: React.ClipboardEvent) => {
+  const handlePaste = (e: React.ClipboardEvent, type: 'user' | 'supervisor' = 'user') => {
     e.preventDefault()
     const pastedData = e
       .clipboardData
@@ -87,18 +103,28 @@ export default function VerifyForm({ email }: { email: string }) {
       .slice(0, 6)
 
     if (pastedData.length === 6) {
+      const setState = type === 'user' ? setOtp : setSupervisorOtp;
       const newOtp = pastedData.split("")
-      setOtp(newOtp)
+      setState(newOtp)
       setError("")
-      handleVerify(pastedData)
+      if (type === 'supervisor') {
+        handleVerify(otp.join(""), pastedData)
+      }
     }
   }
 
-  // Verify OTP
-  const handleVerify = async (otpCode?: string) => {
+  // Verify OLP
+  const handleVerify = async (otpCode?: string, supervisorOtpCode?: string) => {
     const codeToVerify = otpCode ?? otp.join("")
+    const supervisorCodeToVerify = supervisorOtpCode ?? supervisorOtp.join("")
+
     if (codeToVerify.length !== 6) {
       setError("Please enter the complete 6-digit OTP")
+      return
+    }
+
+    if (supervisorCodeToVerify.length !== 6) {
+      setError("Please enter the complete 6-digit supervisor OTP")
       return
     }
 
@@ -109,7 +135,11 @@ export default function VerifyForm({ email }: { email: string }) {
       const response = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: codeToVerify }),
+        body: JSON.stringify({
+          email,
+          otp: codeToVerify,
+          supervisorOtp: supervisorCodeToVerify,
+        }),
       })
 
       if (!response.ok) {
@@ -206,37 +236,164 @@ export default function VerifyForm({ email }: { email: string }) {
       <Card className="mx-auto max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Verify Your Email
+            Verify Your Registration
           </CardTitle>
           <CardDescription className="text-center">
-            We've sent a 6-digit verification code to
+            Verification codes have been sent to you and your supervisor.
             <br />
             <span className="font-medium">{email}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="otp">Enter verification code</Label>
-            <div className="flex gap-2 justify-center">
-              {otp.map((digit, index) => (
-                <Input
-                  key={index}
-                  ref={(el) => {
-                    inputRefs.current[index] = el
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  className="w-12 h-12 text-center text-lg font-semibold border-gray-500"
-                  disabled={isVerifying}
-                />
-              ))}
-            </div>
+          {/* Tabs for user and supervisor verification */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setActiveTab('user')}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                activeTab === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Your Code
+            </button>
+            <button
+              onClick={() => setActiveTab('supervisor')}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                activeTab === 'supervisor'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Supervisor Code
+            </button>
           </div>
+
+          {/* User OTP Tab */}
+          {activeTab === 'user' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="otp">Enter your verification code</Label>
+                <div className="flex gap-2 justify-center">
+                  {otp.map((digit, index) => (
+                    <Input
+                      key={index}
+                      ref={(el) => {
+                        inputRefs.current[index] = el
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value, 'user')}
+                      onKeyDown={(e) => handleKeyDown(index, e, 'user')}
+                      onPaste={(e) => handlePaste(e, 'user')}
+                      className="w-12 h-12 text-center text-lg font-semibold border-gray-500"
+                      disabled={isVerifying}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {timeLeft > 0 ? (
+                    <>Code expires in {formatTime(timeLeft)}</>
+                  ) : (
+                    <>Code has expired</>
+                  )}
+                </p>
+
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Didn't receive the code?
+                  </span>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={handleResend}
+                    disabled={!canResend || isResending}
+                    className="p-0 h-auto font-medium"
+                  >
+                    {isResending ? (
+                      <>
+                        <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Resend OTP"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Supervisor OTP Tab */}
+          {activeTab === 'supervisor' && (
+            <div className="space-y-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-800">
+                  Your supervisor will receive a verification code at their email. Share this section with them for account approval.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supervisorOtp">Enter supervisor verification code</Label>
+                <div className="flex gap-2 justify-center">
+                  {supervisorOtp.map((digit, index) => (
+                    <Input
+                      key={index}
+                      ref={(el) => {
+                        supervisorInputRefs.current[index] = el
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value, 'supervisor')}
+                      onKeyDown={(e) => handleKeyDown(index, e, 'supervisor')}
+                      onPaste={(e) => handlePaste(e, 'supervisor')}
+                      className="w-12 h-12 text-center text-lg font-semibold border-gray-500"
+                      disabled={isVerifying}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {timeLeft > 0 ? (
+                    <>Code expires in {formatTime(timeLeft)}</>
+                  ) : (
+                    <>Code has expired</>
+                  )}
+                </p>
+
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Supervisor didn't receive the code?
+                  </span>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={handleResend}
+                    disabled={!canResend || isResending}
+                    className="p-0 h-auto font-medium"
+                  >
+                    {isResending ? (
+                      <>
+                        <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Resend OTP"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">
@@ -253,43 +410,11 @@ export default function VerifyForm({ email }: { email: string }) {
           {uploadingPhoto && (
             <div className="text-center text-blue-600 text-sm">Uploading profile photo...</div>
           )}
-
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              {timeLeft > 0 ? (
-                <>Code expires in {formatTime(timeLeft)}</>
-              ) : (
-                <>Code has expired</>
-              )}
-            </p>
-
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Didn't receive the code?
-              </span>
-              <Button
-                variant="link"
-                size="sm"
-                onClick={handleResend}
-                disabled={!canResend || isResending}
-                className="p-0 h-auto font-medium"
-              >
-                {isResending ? (
-                  <>
-                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Resend OTP"
-                )}
-              </Button>
-            </div>
-          </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <Button
             onClick={() => handleVerify()}
-            disabled={isVerifying || otp.some((digit) => digit === "")}
+            disabled={isVerifying || otp.some((digit) => digit === "") || supervisorOtp.some((digit) => digit === "")}
             className="w-full"
           >
             {isVerifying ? (
@@ -298,7 +423,7 @@ export default function VerifyForm({ email }: { email: string }) {
                 Verifying...
               </>
             ) : (
-              "Verify Email"
+              "Verify Both Codes"
             )}
           </Button>
 

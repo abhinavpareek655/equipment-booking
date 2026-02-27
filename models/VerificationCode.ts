@@ -8,6 +8,8 @@ interface IVerificationCode extends Document {
   passwordHash: string;
   role: string;
   department: string;
+  supervisorEmail?: string;
+  supervisorCodeHash?: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -21,6 +23,8 @@ const VerificationCodeSchema = new Schema<IVerificationCode>(
     passwordHash: { type: String, required: true },
     role:         { type: String, required: true, trim: true },
     department:   { type: String, required: true, trim: true },
+    supervisorEmail: { type: String, trim: true, default: null },
+    supervisorCodeHash: { type: String, default: null },
     expiresAt:    { type: Date,   required: true },
   },
   {

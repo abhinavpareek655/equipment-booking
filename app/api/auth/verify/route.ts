@@ -10,11 +10,12 @@ import jwt from "jsonwebtoken";
 interface VerifyRequest {
   email: string;
   otp: string;
+  supervisorOtp?: string;
 }
 
 export async function POST(request: Request) {
   await dbConnect();
-  const { email, otp }: VerifyRequest = await request.json();
+  const { email, otp, supervisorOtp }: VerifyRequest = await request.json();
 
   if (!email || !otp) {
     return NextResponse.json(
@@ -39,12 +40,47 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verify user OTP
     const isValid = await bcrypt.compare(otp, record.codeHash);
     if (!isValid) {
       return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
     }
 
-    const { name, passwordHash, role, department } = record;
+    // If supervisor email exists, verify supervisor OTP as well
+    if (record.supervisorEmail && record.supervisorCodeHash) {
+      if (!supervisorOtp) {
+        return NextResponse.json(
+          { message: "Supervisor OTP is required for account activation" },
+          { status: 400 }
+        );
+      }
+
+      const isSupervisorValid = await bcrypt.compare(supervisorOtp, record.supervisorCodeHash);
+      if (!isSupervisorValid) {
+        return NextResponse.json(
+          { message: "Invalid supervisor OTP" },
+          { status: 400 }
+        );
+      }
+
+      // Verify that the supervisor email belongs to an admin or super-admin user
+      const supervisorUser = await User.findOne({ email: record.supervisorEmail }).lean() as any;
+      if (!supervisorUser) {
+        return NextResponse.json(
+          { message: "Supervisor email is not registered in the system" },
+          { status: 400 }
+        );
+      }
+
+      if (supervisorUser?.role !== "admin" && supervisorUser?.role !== "super-admin") {
+        return NextResponse.json(
+          { message: "The provided supervisor email does not have admin privileges" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const { name, passwordHash, role, department, supervisor, supervisorEmail } = record;
     if (!name || !passwordHash || !role || !department) {
       return NextResponse.json(
         { message: "Missing user data in verification record" },
@@ -59,6 +95,8 @@ export async function POST(request: Request) {
       passwordHash,
       role,
       department,
+      supervisor,
+      supervisorEmail,
     });
 
     // Clean up the verification record
