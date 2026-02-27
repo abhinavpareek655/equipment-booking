@@ -1,162 +1,204 @@
 "use client"
 
-import Link from "next/link"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalendarDays, ClipboardList, Database, Users } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react"
 
-export default function HomePage() {
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+
+type EquipmentItem = {
+  id: string
+  name: string
+  category: string
+  location: string
+  availability: string
+  image: string
+}
+
+export default function EquipmentPage() {
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [availability, setAvailability] = useState("all");
+  const router = useRouter();
+
+  useEffect(() => {
+  setLoading(true)
+  console.log("📦 Fetching /api/equipment...")
+
+  fetch("/api/equipment")
+    .then(async (res) => {
+      console.log("🔁 Response status:", res.status)
+
+      const text = await res.text()
+      console.log("📄 Raw response:", text)
+
+      if (!res.ok) {
+        throw new Error(`❌ Failed to fetch /api/equipment: ${res.status}`)
+      }
+
+      // Parse JSON only if response was OK
+      return JSON.parse(text)
+    })
+    .then((data) => {
+      console.log("✅ Parsed data:", data)
+
+      const mapped = data.map((eq: any) => ({
+        id: eq._id,
+        name: eq.name,
+        category: eq.category,
+        location: eq.location,
+        availability: eq.status,
+        image: eq.imageUrl || "/placeholder.svg?height=200&width=200",
+      }))
+
+      setEquipment(mapped)
+      setLoading(false)
+    })
+    .catch((err) => {
+      console.error("🚨 Fetch error:", err)
+    })
+    .catch(() => setLoading(false))
+}, [])
+
+  const filteredEquipment = equipment.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = category === "all" || item.category.toLowerCase() === category;
+    const matchesAvailability = availability === "all" || item.availability.toLowerCase() === availability;
+    return matchesSearch && matchesCategory && matchesAvailability;
+  });
+
+  console.log("🔍 Filtering equipment by search term:", search)
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="space-y-16 text-center">
-          {/* Header Section */}
-            <div className="space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              <span className="inline-block bg-gradient-to-r from-gray-900 via-gray-600 to-gray-900 bg-clip-text text-transparent pb-4">
-              Equipment Booking System
-              </span>
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600 md:text-xl leading-relaxed">
-              Central University of Rajasthan - School of Life Sciences
-            </p>
-            </div>
-
-          {/* Navigation Cards */}
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              <Card className="group relative overflow-hidden border-0 bg-gray-50/50 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="flex-col items-center text-center space-y-4 p-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                    <Database className="h-8 w-8 text-gray-700" />
-                  </div>
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Equipment</CardTitle>
-                    <CardDescription className="text-gray-600">Browse available equipment</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardFooter className="p-6 pt-0">
-                  <Link href="/equipment" className="w-full">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 hover:shadow-lg relative overflow-hidden group">
-                      <span className="relative z-10">View Equipment</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-
-              <Card className="group relative overflow-hidden border-0 bg-gray-50/50 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="flex-col items-center text-center space-y-4 p-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                    <CalendarDays className="h-8 w-8 text-gray-700" />
-                  </div>
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Booking</CardTitle>
-                    <CardDescription className="text-gray-600">Schedule equipment usage</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardFooter className="p-6 pt-0">
-                  <Link href="/booking" className="w-full">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 hover:shadow-lg relative overflow-hidden group">
-                      <span className="relative z-10">Book Now</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-
-              <Card className="group relative overflow-hidden border-0 bg-gray-50/50 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="flex-col items-center text-center space-y-4 p-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                    <ClipboardList className="h-8 w-8 text-gray-700" />
-                  </div>
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg font-semibold text-gray-900">My Bookings</CardTitle>
-                    <CardDescription className="text-gray-600">Manage your reservations</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardFooter className="p-6 pt-0">
-                  <Link href="/my-bookings" className="w-full">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 hover:shadow-lg relative overflow-hidden group">
-                      <span className="relative z-10">View Bookings</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-
-              <Card className="group relative overflow-hidden border-0 bg-gray-50/50 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="flex-col items-center text-center space-y-4 p-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow duration-300">
-                    <Users className="h-8 w-8 text-gray-700" />
-                  </div>
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Guidelines</CardTitle>
-                    <CardDescription className="text-gray-600">Usage policies and SOPs</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardFooter className="p-6 pt-0">
-                  <Link href="/guidelines" className="w-full">
-                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 hover:shadow-lg relative overflow-hidden group">
-                      <span className="relative z-10">View Guidelines</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-
-          {/* About Section */}
-          <div className="mx-auto max-w-4xl">
-            <div className="space-y-8">
-              <div className="flex justify-center">
-                <div className="relative">
-                  {/* <div className="absolute inset-0 bg-white rounded-full animate-[breathing_4s_ease-in-out_infinite] opacity-20" /> */}
-                  <div className="relative rounded-full p-6 animate-[breathing_4s_ease-in-out_infinite]">
-                    <img
-                      src="/images/curaj-logo-low.png"
-                      alt="Department of Biotechnology"
-                      width="100px"
-                      height={"100px"}
-                      className="w-24 h-24 md:w-24 md:h-24 object-contain"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
-                  About DBT BUILDER Project
-                </h2>
-                <div className="max-w-3xl mx-auto">
-                  <p className="text-lg text-gray-600 leading-relaxed">
-                    The DBT BUILDER project provides advanced research equipment for faculty, researchers, and students
-                    at Central University of Rajasthan. This booking system ensures systematic, fair, and efficient use
-                    of this valuable research equipment.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="container mx-auto px-4">
+      <div className="mb-8 grid gap-4 md:grid-cols-4">
+        <div className="flex items-center relative md:col-span-2">
+          <Search className="absolute w-5 h-5 text-gray-400 left-3 pointer-events-none" />
+          <Input
+            id="search"
+            placeholder="Search equipment, tools, or keywords..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="microscopy">Microscopy</SelectItem>
+              <SelectItem value="molecular">Molecular Biology</SelectItem>
+              <SelectItem value="separation">Separation</SelectItem>
+              <SelectItem value="analysis">Analysis</SelectItem>
+              <SelectItem value="chromatography">Chromatography</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <Select value={availability} onValueChange={setAvailability}>
+            <SelectTrigger id="availability">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="reserved">Reserved</SelectItem>
+              <SelectItem value="maintenance">Under Maintenance</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes shimmer {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        
-        @keyframes breathing {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-      `}</style>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Equipment Booking System</h1>
+        <h4 className="text-lg text-gray-600">Central University of Rajasthan</h4>
+      </div>
+
+      {loading ? (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-lg bg-white border shadow overflow-hidden flex flex-col"
+          >
+            <div className="aspect-video w-full skeleton-shimmer" />
+            <div className="p-4 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <div className="h-6 rounded w-1/2 skeleton-shimmer" />
+                <div className="h-5 rounded w-20 skeleton-shimmer" />
+              </div>
+              <div className="h-4 rounded w-1/4 mb-3 skeleton-shimmer" />
+              <div className="h-4 rounded w-1/2 mb-4 skeleton-shimmer" />
+              <div className="flex-1" />
+              <div className="flex justify-between gap-2 mt-4">
+                <div className="h-9 rounded w-28 skeleton-shimmer" />
+                <div className="h-9 rounded w-28 skeleton-shimmer" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredEquipment.map((item) => {
+            const isAvailable = item.availability === "Available";
+            return (
+              <Card
+                key={item.id}
+                className={`overflow-hidden ${isAvailable ? "cursor-pointer hover:scale-105 transition-all duration-300" : "opacity-60"}`}
+                onClick={() => {
+                  if (isAvailable) router.push(`/booking?equipment=${item.id}`);
+                }}
+                tabIndex={isAvailable ? 0 : -1}
+                role="button"
+                aria-disabled={!isAvailable}
+              >
+                <div className="aspect-video w-full">
+                  <img src={item.image || "/placeholder.svg"} alt={item.name} className="h-full w-full object-cover" />
+                </div>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle>{item.name}</CardTitle>
+                    <Badge
+                      variant={
+                        item.availability === "Available"
+                          ? "default"
+                          : item.availability === "Reserved"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {item.availability}
+                    </Badge>
+                  </div>
+                  <CardDescription>{item.category}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">Location: {item.location}</p>
+                </CardContent>
+                <CardFooter className="flex">
+                  <Link href={`/booking?equipment=${item.id}`} passHref className="w-full">
+                    <Button disabled={!isAvailable} className="w-full">Book Now</Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })}
+      </div>
+    )}
     </div>
   )
 }

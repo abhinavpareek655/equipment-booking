@@ -3,8 +3,8 @@ import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { MainNav } from "@/components/main-nav"
-import { UserNav } from "@/components/user-nav"
 import Image from "next/image"
+import Link from "next/link"
 import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -35,58 +35,108 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
-          <div className="flex min-h-screen flex-col">
-            <header className="sticky top-0 z-40 w-full border-b bg-background">
-              <div className="container px-4 sm:px-6 lg:px-8 flex h-16 gap-2 items-center">
-                <MainNav />
-                <div className="flex items-center ml-4">
-                  <UserNav />
-                </div>
-              </div>
-            </header>
-            <main className="flex-1 container px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">{children}</main>
-            <footer className="border-t py-4 sm:py-6">
-              <div className="container px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-                    © {new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src="/images/curaj-logo.png"
-                        alt="Central University of Rajasthan"
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 object-contain"
-                      />
-                      <span className="text-xs text-muted-foreground">CURAJ</span>
+          <div className="flex min-h-screen w-full">
+            {/* Sidebar - Desktop only */}
+            <MainNav />
+            
+            {/* Main Content */}
+            <div className="flex flex-1 flex-col w-full md:ml-64">
+              <main className="flex-1 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 bg-white">{children}</main>
+              <footer className="border-t border-gray-300 bg-white">
+                <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+                  <div className="grid gap-8 md:grid-cols-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src="/images/curaj-logo.png"
+                          alt="Central University of Rajasthan"
+                          width={32}
+                          height={32}
+                          className="h-8 w-8 object-contain"
+                        />
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">DBT BUILDER</div>
+                          <div className="text-xs text-gray-600">Equipment Booking System</div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Central University of Rajasthan, School of Life Sciences
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Image
+                            src="/images/NAAC5.jpeg"
+                            alt="NAAC A++"
+                            width={24}
+                            height={24}
+                            className="h-12 w-12 object-contain"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Image
+                            src="images/NIRF_Logo.jpeg"
+                            alt="NIRF Rank 89"
+                            width={24}
+                            height={24}
+                            className="h-12 w-12 object-contain"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Image
+                            src="/images/dbt-logo.png"
+                            alt="Department of Biotechnology"
+                            width={24}
+                            height={24}
+                            className="h-12 w-12 object-contain"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Image
-                      src="/images/naac-logo.png"
-                      alt="NAAC A++"
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 object-contain"
-                      />
-                      <span className="text-xs text-muted-foreground">NAAC A++</span>
+
+                    <div className="space-y-3">
+                      <div className="text-sm font-semibold text-gray-900">Quick Links</div>
+                      <div className="grid gap-2 text-sm">
+                        <Link href="/" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
+                        <Link href="/equipment" className="text-gray-600 hover:text-gray-900">Browse Equipment</Link>
+                        <Link href="/booking" className="text-gray-600 hover:text-gray-900">Book Equipment</Link>
+                        <Link href="/my-bookings" className="text-gray-600 hover:text-gray-900">My Bookings</Link>
+                        <Link href="/guidelines" className="text-gray-600 hover:text-gray-900">Guidelines</Link>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src="/images/dbt-logo.png"
-                        alt="Department of Biotechnology"
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 object-contain"
-                      />
-                      <span className="text-xs text-muted-foreground">DBT</span>
+
+                    <div className="space-y-3">
+                      <div className="text-sm font-semibold text-gray-900">Account</div>
+                      <div className="grid gap-2 text-sm">
+                        <Link href="/profile" className="text-gray-600 hover:text-gray-900">Profile</Link>
+                        <Link href="/login" className="text-gray-600 hover:text-gray-900">Login</Link>
+                        <Link href="/register" className="text-gray-600 hover:text-gray-900">Register</Link>
+                        <Link href="/forgot-password" className="text-gray-600 hover:text-gray-900">Forgot Password</Link>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="text-xs text-gray-600">Developer</div>
+                        <div className="text-sm font-medium text-gray-900">Abhinav Pareek</div>
+                        <a
+                          href="https://github.com/abhinavpareek655"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-gray-600 hover:text-gray-900"
+                        >
+                          github.com/abhinavpareek655
+                        </a>
                     </div>
                   </div>
+
+                  <div className="mt-8 border-t border-gray-200 pt-4">
+                    <p className="text-xs text-gray-600">
+                      © {new Date().getFullYear()} Central University of Rajasthan. All rights reserved.
+                    </p>
+                  </div>
                 </div>
+              </footer>
               </div>
-            </footer>
-          </div>
+            </div>
         </ThemeProvider>
         <Toaster />
       </body>
