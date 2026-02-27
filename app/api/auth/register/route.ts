@@ -6,7 +6,6 @@ import VerificationCode from "@/models/VerificationCode";
 import User from "@/models/User";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
-import { isAllowedFacultyEmail } from "@/lib/allowed-faculty";
 
 type RegisterRequest = {
   name?: string;
